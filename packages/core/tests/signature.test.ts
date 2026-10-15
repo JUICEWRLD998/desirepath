@@ -63,3 +63,16 @@ test("headings do not use up the 40-landmark cap", () => {
   const snap = Array.from({ length: 60 }, (_, i) => (i < 30 ? `- heading "h${i}"` : `- button "b${i}"`)).join("\n");
   assert.equal(landmarksFromSnapshot(snap).filter(l => l.startsWith("button")).length, 30);
 });
+
+const card = (name: string) => `  - listitem:\n    - article:\n      - link "${name}":\n        - /url: /x\n      - button "Add to basket"`;
+
+test("repeated item cards collapse to one generic landmark set", () => {
+  const a = `- heading "A" [level=1]\n- link "Home":\n- list:\n${card("Libertarianism for Beginners")}\n${card("Mesaerion")}`;
+  const b = `- heading "B" [level=1]\n- link "Home":\n- list:\n${card("Scott Pilgrim")}`;
+  assert.deepEqual(landmarksFromSnapshot(a), ["link:home", "link:*", "button:add to basket", "heading"]);
+  assert.equal(signature("https://x.com/p_1/", landmarksFromSnapshot(a)), signature("https://x.com/p_2/", landmarksFromSnapshot(b)));
+});
+
+test("a link outside a card keeps its name", () => {
+  assert.deepEqual(landmarksFromSnapshot(`- article:\n  - link "Read me":`), ["link:read me"]);
+});

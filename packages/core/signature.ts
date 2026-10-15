@@ -29,19 +29,32 @@ export function urlTemplate(url: string): string {
  * Landmarks from a Playwright ariaSnapshot() string: interactive roles + names (first 40), plus one bare "heading"
  * marker if the page has any heading. Playwright YAML-quotes entries whose text has special characters
  * (- 'link "Books: all"':) and backslash-escapes inner quotes, so both are handled.
+ * Controls inside a repeated item card (listitem > article) carry item-specific text (book titles, related
+ * products): their link names become "*" and each distinct card landmark is listed once, however many cards render.
  */
 export function landmarksFromSnapshot(snapshot: string): string[] {
   const out: string[] = [];
+  const cardSeen = new Set<string>();
+  const stack: { indent: number; role: string }[] = [];
   let interactive = 0, heading = false;
   for (const line of snapshot.split("\n")) {
-    const m = line.match(/^\s*- ('?)(\w+)(?: "((?:[^"\\]|\\.)*)")?/);
+    const m = line.match(/^(\s*)- ('?)(\w+)(?: "((?:[^"\\]|\\.)*)")?/);
     if (!m) continue;
-    const [, quoted, role, raw] = m;
+    const [, space, quoted, role, raw] = m;
+    while (stack.length && stack[stack.length - 1].indent >= space.length) stack.pop();
+    stack.push({ indent: space.length, role });
     if (role === "heading") { heading = true; continue; }
     if (!SIG_ROLES.has(role) || interactive >= MAX_LANDMARKS) continue;
+    const li = stack.findIndex(e => e.role === "listitem");
+    const inCard = li >= 0 && stack.slice(li + 1).some(e => e.role === "article");
     let name = (raw ?? "").replace(/\\(.)/g, "$1");
     if (quoted) name = name.replace(/''/g, "'");
-    out.push(`${role}:${normName(name)}`);
+    const landmark = `${role}:${role === "link" && inCard ? "*" : normName(name)}`;
+    if (inCard) {
+      if (cardSeen.has(landmark)) continue;
+      cardSeen.add(landmark);
+    }
+    out.push(landmark);
     interactive++;
   }
   if (heading) out.push("heading");
