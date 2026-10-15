@@ -10,8 +10,12 @@ export function normName(s: string): string {
 }
 
 function isIdSegment(s: string): boolean {
-  return /^\d+$/.test(s) || /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(s)
-    || /^[0-9a-f]{12,}$/i.test(s) || /_\d+$/.test(s) || /^OL\d+[A-Z]$/.test(s);
+  return /^\d+$/.test(s)
+    || /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(s)
+    || (/^[0-9a-f]{12,}$/i.test(s) && /\d/.test(s))   // long hash; needs a digit so words made of a-f are kept
+    || /^[a-z0-9-]+_\d+$/.test(s)                      // slug_123 (books.toscrape); lowercase only, so Wikipedia's Windows_10 is kept
+    || /^page-\d+\.html$/.test(s)                       // paginated static pages
+    || /^OL\d+[A-Z]$/.test(s);                          // Open Library ids
 }
 
 export function urlTemplate(url: string): string {
@@ -22,34 +26,25 @@ export function urlTemplate(url: string): string {
 }
 
 /**
- * Landmarks from a Playwright ariaSnapshot() string: interactive roles + names, headings as bare roles.
- * Controls inside a repeated item card (listitem > article) carry item-specific text (book titles, related
- * products), so their link names become "*" and the card's landmarks are listed once, however many cards render.
- * Bare "heading" is also listed once: a heading count tracks page content (optional sections), not the template.
+ * Landmarks from a Playwright ariaSnapshot() string: interactive roles + names (first 40), plus one bare "heading"
+ * marker if the page has any heading. Playwright YAML-quotes entries whose text has special characters
+ * (- 'link "Books: all"':) and backslash-escapes inner quotes, so both are handled.
  */
 export function landmarksFromSnapshot(snapshot: string): string[] {
   const out: string[] = [];
-  const seenDeduped = new Set<string>();
-  const stack: { indent: number; role: string }[] = [];
+  let interactive = 0, heading = false;
   for (const line of snapshot.split("\n")) {
-    const m = line.match(/^(\s*)- (\w+)(?: "([^"]*)")?/);
+    const m = line.match(/^\s*- ('?)(\w+)(?: "((?:[^"\\]|\\.)*)")?/);
     if (!m) continue;
-    const indent = m[1].length;
-    while (stack.length && stack[stack.length - 1].indent >= indent) stack.pop();
-    stack.push({ indent, role: m[2] });
-    const li = stack.findIndex(e => e.role === "listitem");
-    const inCard = li >= 0 && stack.slice(li + 1).some(e => e.role === "article");
-    let landmark: string | null = null;
-    if (m[2] === "heading") landmark = "heading";
-    else if (SIG_ROLES.has(m[2])) landmark = `${m[2]}:${m[2] === "link" && inCard ? "*" : normName(m[3] ?? "")}`;
-    if (landmark === null) continue;
-    if (inCard || landmark === "heading") {
-      if (seenDeduped.has(landmark)) continue;
-      seenDeduped.add(landmark);
-    }
-    out.push(landmark);
-    if (out.length >= MAX_LANDMARKS) break;
+    const [, quoted, role, raw] = m;
+    if (role === "heading") { heading = true; continue; }
+    if (!SIG_ROLES.has(role) || interactive >= MAX_LANDMARKS) continue;
+    let name = (raw ?? "").replace(/\\(.)/g, "$1");
+    if (quoted) name = name.replace(/''/g, "'");
+    out.push(`${role}:${normName(name)}`);
+    interactive++;
   }
+  if (heading) out.push("heading");
   return out;
 }
 

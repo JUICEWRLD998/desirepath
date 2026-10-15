@@ -34,20 +34,32 @@ test("category and product differ", () => {
     signature("https://x.com/catalogue/category/travel_2/index.html", landmarksFromSnapshot(category)));
 });
 
-test("landmark order does not matter; headings contribute role only", () => {
+test("landmark order does not matter; headings contribute a single role marker", () => {
   assert.deepEqual(landmarksFromSnapshot(productA).filter(l => l === "heading"), ["heading"]);
   assert.equal(signature("https://x.com/", ["link:a", "button:b"]), signature("https://x.com/", ["button:b", "link:a"]));
 });
 
-test("action key ignores typed values and digits in names", () => {
+test("action key normalises digits and case in names", () => {
   assert.equal(actionKey("click", "link", "Travel 12", 0), "click:link:travel ##:0");
 });
 
-const card = (name: string) => `  - listitem:\n    - article:\n      - link "${name}":\n        - /url: /x\n      - button "Add to basket"`;
+test("Wikipedia article titles are never collapsed", () => {
+  for (const t of ["Windows_10", "Boeing_747", "Desire_path", "Catch-22"])
+    assert.equal(urlTemplate(`https://en.wikipedia.org/wiki/${t}`), `https://en.wikipedia.org/wiki/${t}`);
+});
 
-test("repeated item cards collapse to one generic landmark", () => {
-  const a = `- heading "A" [level=1]\n- link "Home":\n- list:\n${card("Libertarianism for Beginners")}\n${card("Mesaerion")}`;
-  const b = `- heading "B" [level=1]\n- link "Home":\n- list:\n${card("Scott Pilgrim")}`;
-  assert.deepEqual(landmarksFromSnapshot(a), ["heading", "link:home", "link:*", "button:add to basket"]);
-  assert.equal(signature("https://x.com/p_1/", landmarksFromSnapshot(a)), signature("https://x.com/p_2/", landmarksFromSnapshot(b)));
+test("books.toscrape slugs and page numbers collapse", () => {
+  assert.equal(urlTemplate("https://books.toscrape.com/catalogue/sapiens_996/index.html"), "https://books.toscrape.com/catalogue/:id/index.html");
+  assert.equal(urlTemplate("https://books.toscrape.com/catalogue/page-2.html"), urlTemplate("https://books.toscrape.com/catalogue/page-7.html"));
+});
+
+test("landmarks keep YAML-quoted entries and unescape quotes (real Playwright output)", () => {
+  const snap = [`- heading "T" [level=1]`, `- 'button "Say: hi"'`, `- 'link "Books: all"':`, `  - /url: /x`,
+    `- link "He said \\"hi\\"":`, `  - /url: /y`, `- button "Plain"`, `- textbox "Search"`].join("\n");
+  assert.deepEqual(landmarksFromSnapshot(snap), ["button:say: hi", "link:books: all", `link:he said "hi"`, "button:plain", "textbox:search", "heading"]);
+});
+
+test("headings do not use up the 40-landmark cap", () => {
+  const snap = Array.from({ length: 60 }, (_, i) => (i < 30 ? `- heading "h${i}"` : `- button "b${i}"`)).join("\n");
+  assert.equal(landmarksFromSnapshot(snap).filter(l => l.startsWith("button")).length, 30);
 });

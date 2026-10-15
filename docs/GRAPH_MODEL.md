@@ -1,53 +1,46 @@
 # Graph model
 
-Desirepath stores each site's map in its own FalkorDB graph. `packages/core/graph.ts`
-maps a public site to `public:<site>` and a tenant's private overlay to
-`tenant:<tenant>:<site>`. A tenant plan reads its private graph first and then
-the public graph; public-only plans never select tenant graphs.
+Source of truth for the map. Code: `packages/core/graph.ts`; queries: `packages/core/queries/*.cypher`.
+
+## One graph per namespace
+
+| Graph name | Written by | Meaning |
+|---|---|---|
+| `public:<site>` | every agent | shared map of one site |
+| `tenant:<tenant>:<site>` | that tenant's agents | private overlay; never copied into `public:*` |
+
+`graphName()` rejects anything outside `[A-Za-z0-9._-]`, so a site or tenant name cannot spell its way into another namespace.
+Tenants are separate FalkorDB graphs, not filtered rows (test: *tenant graphs never leak into public*).
 
 ## Nodes
 
-| Label | Properties | Purpose |
+| Label | Properties | Meaning |
 |---|---|---|
-| `State` | `sig`, `url_template`, `title`, `landmarks`, `first_seen`, `visits` | A screen identified by its deterministic signature. |
-| `Goal` | `id`, `text`, `site`, `created` | A task goal that has been achieved. |
-| `Run` | `id`, `agent`, `tenant`, `task`, `mode`, `started`, `ended`, `outcome`, `steps`, `llm_calls`, `tokens`, `ms` | One agent episode. |
-| `Step` | `i`, `action_key`, `ok`, `ms`, `source` | One action in a run. |
+| `State` | `sig`, `url_template`, `title`, `landmarks`, `first_seen`, `visits` | a screen |
+| `Goal` | `id`, `text` | a task that was completed at least once |
+| `Run`, `Step` | see `implementation.md` §5 | episodic memory; **written in Phase 2**, not yet by `graph.ts` |
 
 ## Relationships
 
-| Type | From → To | Properties | Purpose |
-|---|---|---|---|
-| `ACT` | `State` → `State` | `key`, `kind`, `role`, `name`, `nth`, `label`, `ok`, `fail`, `risk`, `ms`, `last_seen`, `last_fail` | A recorded transition and its reliability. |
-| `REACHES` | `State` → `Goal` | `count`, `last_seen` | Associates a successful screen with a goal. |
-| `OF_RUN` | `Step` → `Run` | — | Associates a step with its run. |
-| `FROM` / `TO` | `Step` → `State` | — | Records the step's starting and resulting screens. |
+`(:State)-[:ACT {key, kind, role, name, nth, label, ok, fail, ms, risk, last_seen}]->(:State)` is procedural memory.
+`(:State)-[:REACHES {count}]->(:Goal)` is semantic memory.
+`key` is `kind:role:name:nth` with digits and case in the name normalised (`actionKey`), so "Travel 12" and "Travel 13" are one action.
+`MERGE (a)-[e:ACT {key}]->(b)` makes an edge unique per (from, key, to).
 
-`State.sig` and `Goal.id` are exact-match keys. `Goal.text` is intended for
-full-text goal lookup. The query definitions are in `packages/core/queries/`.
+## State signature
 
-## Signature and route cost
+`sig = sha1(urlTemplate + "|" + sha1(sortedLandmarks))[0:16]`, no LLM (`packages/core/signature.ts`).
+- `urlTemplate`: id-like path segments become `:id` (digits, UUIDs, 12+ hex with a digit, lowercase `slug_123`, `page-N.html`, Open Library ids); query keys sorted, values `:v`. Wikipedia titles such as `Windows_10` are kept.
+- Landmarks: the first 40 interactive elements (button, link, textbox, combobox, checkbox, tab) as `role:normalised name`, plus one `heading` marker if the page has any heading.
+  Playwright's YAML-quoted entries and escaped quotes are parsed.
 
-The state signature is the first 16 hex characters of SHA-1 over the URL
-template and a SHA-1 of sorted accessibility landmarks. Numeric, UUID, and
-long-hash path components collapse to `:id`; query values are omitted; landmark
-names are lowercased, digit-normalized, and whitespace-collapsed. Headings
-contribute their role only.
+## Risk and planning
 
-For an edge with `ok` successful and `fail` failed traversals:
+`risk = -ln((ok+1)/(ok+fail+2)) + 0.05` is computed **inside `report.cypher`** from the *new* counts (verified; see `DECISIONS.md`).
+`plan.cypher` calls `algo.SPpaths` on `risk` (cost `ms`, `pathCount: 3`) and returns each route's steps with the expected next `sig` and the hop count.
+`pSuccess = exp(-(pathWeight - 0.05*hops))`; the agent follows a route at `pSuccess >= 0.6`.
 
-```text
-p_success = (ok + 1) / (ok + fail + 2)
-risk = -ln(p_success) + 0.05
-```
+## Indexes
 
-`plan.cypher` asks `algo.SPpaths` for up to three routes by summed risk and
-latency. `routeSuccess` in `packages/core/risk.ts` removes the per-hop penalty
-from the returned weight to recover the estimated success probability.
-
-## Verification boundary
-
-The signature and risk helpers, query files, and graph-scope selection have
-unit coverage. FalkorDB procedure support and live query behavior remain
-Phase 0 integration checks; a green unit suite does not certify a configured
-FalkorDB instance.
+Exact: `State(sig)`, `Goal(id)`. Full-text: `Goal(text)`. Created by `ensureSchema()` (idempotent).
+Free text goes through `ftQuery()` first: lowercased tokens, stop words dropped, joined with `|`, because the raw query is AND-ed and breaks on punctuation.
