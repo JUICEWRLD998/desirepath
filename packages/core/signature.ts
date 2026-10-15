@@ -10,8 +10,12 @@ export function normName(s: string): string {
 }
 
 function isIdSegment(s: string): boolean {
-  return /^\d+$/.test(s) || /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(s)
-    || /^[0-9a-f]{12,}$/i.test(s) || /_\d+$/.test(s) || /^OL\d+[A-Z]$/.test(s);
+  return /^\d+$/.test(s)
+    || /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(s)
+    || (/^[0-9a-f]{12,}$/i.test(s) && /\d/.test(s))   // long hash; needs a digit so words made of a-f are kept
+    || /^[a-z0-9-]+_\d+$/.test(s)                      // slug_123 (books.toscrape); lowercase only, so Wikipedia's Windows_10 is kept
+    || /^page-\d+\.html$/.test(s)                       // paginated static pages
+    || /^OL\d+[A-Z]$/.test(s);                          // Open Library ids
 }
 
 export function urlTemplate(url: string): string {
@@ -21,16 +25,26 @@ export function urlTemplate(url: string): string {
   return `${u.protocol}//${u.host}${path}${keys.length ? "?" + keys.map(k => `${k}=:v`).join("&") : ""}`;
 }
 
-/** Landmarks from a Playwright ariaSnapshot() string: interactive roles + names, headings as bare roles. */
+/**
+ * Landmarks from a Playwright ariaSnapshot() string: interactive roles + names (first 40), plus one bare "heading"
+ * marker if the page has any heading. Playwright YAML-quotes entries whose text has special characters
+ * (- 'link "Books: all"':) and backslash-escapes inner quotes, so both are handled.
+ */
 export function landmarksFromSnapshot(snapshot: string): string[] {
   const out: string[] = [];
+  let interactive = 0, heading = false;
   for (const line of snapshot.split("\n")) {
-    const m = line.match(/^\s*- (\w+)(?: "([^"]*)")?/);
+    const m = line.match(/^\s*- ('?)(\w+)(?: "((?:[^"\\]|\\.)*)")?/);
     if (!m) continue;
-    if (m[1] === "heading") out.push("heading");
-    else if (SIG_ROLES.has(m[1])) out.push(`${m[1]}:${normName(m[2] ?? "")}`);
-    if (out.length >= MAX_LANDMARKS) break;
+    const [, quoted, role, raw] = m;
+    if (role === "heading") { heading = true; continue; }
+    if (!SIG_ROLES.has(role) || interactive >= MAX_LANDMARKS) continue;
+    let name = (raw ?? "").replace(/\\(.)/g, "$1");
+    if (quoted) name = name.replace(/''/g, "'");
+    out.push(`${role}:${normName(name)}`);
+    interactive++;
   }
+  if (heading) out.push("heading");
   return out;
 }
 
