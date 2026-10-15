@@ -1,6 +1,7 @@
 // P0: signature stability (plan §6.1). Loads each URL 3x, compares sigs; checks template/category differences.
 import { createHash } from "node:crypto";
-import { writeFileSync } from "node:fs";
+import { mkdirSync, writeFileSync } from "node:fs";
+mkdirSync("spikes/out", { recursive: true });
 import { chromium, type Page } from "playwright";
 
 const ROLES = new Set(["button", "link", "textbox", "combobox", "checkbox", "tab", "heading"]);

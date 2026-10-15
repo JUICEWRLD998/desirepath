@@ -1,6 +1,7 @@
 // P0: FalkorDB Cloud spike. Records raw output of every check to spikes/out/falkor.json.
 import "dotenv/config";
-import { writeFileSync } from "node:fs";
+import { mkdirSync, writeFileSync } from "node:fs";
+mkdirSync("spikes/out", { recursive: true });
 import { FalkorDB } from "falkordb";
 
 const url = process.env.FALKORDB_URL;
