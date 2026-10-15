@@ -21,14 +21,33 @@ export function urlTemplate(url: string): string {
   return `${u.protocol}//${u.host}${path}${keys.length ? "?" + keys.map(k => `${k}=:v`).join("&") : ""}`;
 }
 
-/** Landmarks from a Playwright ariaSnapshot() string: interactive roles + names, headings as bare roles. */
+/**
+ * Landmarks from a Playwright ariaSnapshot() string: interactive roles + names, headings as bare roles.
+ * Controls inside a repeated item card (listitem > article) carry item-specific text (book titles, related
+ * products), so their link names become "*" and the card's landmarks are listed once, however many cards render.
+ * Bare "heading" is also listed once: a heading count tracks page content (optional sections), not the template.
+ */
 export function landmarksFromSnapshot(snapshot: string): string[] {
   const out: string[] = [];
+  const seenDeduped = new Set<string>();
+  const stack: { indent: number; role: string }[] = [];
   for (const line of snapshot.split("\n")) {
-    const m = line.match(/^\s*- (\w+)(?: "([^"]*)")?/);
+    const m = line.match(/^(\s*)- (\w+)(?: "([^"]*)")?/);
     if (!m) continue;
-    if (m[1] === "heading") out.push("heading");
-    else if (SIG_ROLES.has(m[1])) out.push(`${m[1]}:${normName(m[2] ?? "")}`);
+    const indent = m[1].length;
+    while (stack.length && stack[stack.length - 1].indent >= indent) stack.pop();
+    stack.push({ indent, role: m[2] });
+    const li = stack.findIndex(e => e.role === "listitem");
+    const inCard = li >= 0 && stack.slice(li + 1).some(e => e.role === "article");
+    let landmark: string | null = null;
+    if (m[2] === "heading") landmark = "heading";
+    else if (SIG_ROLES.has(m[2])) landmark = `${m[2]}:${m[2] === "link" && inCard ? "*" : normName(m[3] ?? "")}`;
+    if (landmark === null) continue;
+    if (inCard || landmark === "heading") {
+      if (seenDeduped.has(landmark)) continue;
+      seenDeduped.add(landmark);
+    }
+    out.push(landmark);
     if (out.length >= MAX_LANDMARKS) break;
   }
   return out;

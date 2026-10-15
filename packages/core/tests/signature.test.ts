@@ -42,3 +42,12 @@ test("landmark order does not matter; headings contribute role only", () => {
 test("action key ignores typed values and digits in names", () => {
   assert.equal(actionKey("click", "link", "Travel 12", 0), "click:link:travel ##:0");
 });
+
+const card = (name: string) => `  - listitem:\n    - article:\n      - link "${name}":\n        - /url: /x\n      - button "Add to basket"`;
+
+test("repeated item cards collapse to one generic landmark", () => {
+  const a = `- heading "A" [level=1]\n- link "Home":\n- list:\n${card("Libertarianism for Beginners")}\n${card("Mesaerion")}`;
+  const b = `- heading "B" [level=1]\n- link "Home":\n- list:\n${card("Scott Pilgrim")}`;
+  assert.deepEqual(landmarksFromSnapshot(a), ["heading", "link:home", "link:*", "button:add to basket"]);
+  assert.equal(signature("https://x.com/p_1/", landmarksFromSnapshot(a)), signature("https://x.com/p_2/", landmarksFromSnapshot(b)));
+});
