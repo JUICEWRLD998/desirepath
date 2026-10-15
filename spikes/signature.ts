@@ -1,31 +1,14 @@
-// P0: signature stability (plan §6.1). Loads each URL 3x, compares sigs; checks template/category differences.
-import { createHash } from "node:crypto";
+// P0: signature stability (plan §6.1). Loads each URL 3x using the core signature implementation.
 import { mkdirSync, writeFileSync } from "node:fs";
 mkdirSync("spikes/out", { recursive: true });
 import { chromium, type Page } from "playwright";
+import { landmarksFromSnapshot, signature, urlTemplate } from "../packages/core/signature.ts";
 
-const ROLES = new Set(["button", "link", "textbox", "combobox", "checkbox", "tab", "heading"]);
-export function urlTemplate(u: string): string {
-  const x = new URL(u);
-  const path = x.pathname.split("/").map(s => /^\d+$/.test(s) || /^[0-9a-f-]{32,36}$/i.test(s) || /^[0-9a-f]{12,}$/i.test(s) || /_\d+$/.test(s) ? ":id" : s).join("/");
-  const q = [...x.searchParams.keys()].sort().map(k => `${k}=:v`).join("&");
-  return `${x.protocol}//${x.host}${path}${q ? "?" + q : ""}`;
-}
-const norm = (s: string) => s.toLowerCase().replace(/\d/g, "#").replace(/\s+/g, " ").trim();
-
-export async function observe(page: Page) {
+async function observe(page: Page) {
   const snap = await page.locator("body").ariaSnapshot();
-  const lm: string[] = [];
-  for (const line of snap.split("\n")) {
-    const m = line.match(/^\s*- (\w+)(?: "([^"]*)")?/);
-    if (!m || !ROLES.has(m[1])) continue;
-    lm.push(m[1] === "heading" ? "heading" : `${m[1]}:${norm(m[2] ?? "")}`);
-    if (lm.length >= 40) break;
-  }
-  lm.sort();
+  const lm = landmarksFromSnapshot(snap);
   const tpl = urlTemplate(page.url());
-  const sig = createHash("sha1").update(tpl + "|" + createHash("sha1").update(lm.join("\n")).digest("hex")).digest("hex").slice(0, 16);
-  return { sig, tpl, landmarks: lm.length };
+  return { sig: signature(page.url(), lm), tpl, landmarks: lm.length };
 }
 
 const SITES: Record<string, string[]> = {
@@ -43,12 +26,18 @@ for (const [site, urls] of Object.entries(SITES)) {
     res[u] = [];
     for (let i = 0; i < 3; i++) {
       const ctx = await browser.newContext(); const p = await ctx.newPage();
-      try { await p.goto(u, { waitUntil: "domcontentloaded", timeout: 30000 }); const o = await observe(p); res[u].push(`${o.sig} (${o.landmarks} lm)`); }
+      try { await p.goto(u, { waitUntil: "domcontentloaded", timeout: 30000 }); const o = await observe(p); res[u].push(o.sig); }
       catch (e) { res[u].push("ERR " + (e as Error).message.slice(0, 80)); }
       await ctx.close(); await new Promise(r => setTimeout(r, 1000)); // <= 1 req/s
     }
   }
-  out[site] = res; console.log(site, JSON.stringify(res, null, 1));
+  const loaded = (values: string[]) => values.length === 3 && values.every(v => !v.startsWith("ERR"));
+  const stable = Object.values(res).every(values => loaded(values) && new Set(values).size === 1);
+  const books = site === "books";
+  const productPagesMatch = !books || res[urls[2]]?.[0] === res[urls[3]]?.[0];
+  const categoryDiffers = !books || res[urls[1]]?.[0] !== res[urls[2]]?.[0];
+  out[site] = { stable, productPagesMatch, categoryDiffers, urls: res };
+  console.log(site, JSON.stringify(out[site], null, 1));
 }
 writeFileSync("spikes/out/signature.json", JSON.stringify(out, null, 2));
 await browser.close();

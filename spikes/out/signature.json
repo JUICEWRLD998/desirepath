@@ -1,0 +1,85 @@
+{
+  "books": {
+    "stable": true,
+    "productPagesMatch": true,
+    "categoryDiffers": true,
+    "urls": {
+      "https://books.toscrape.com/": [
+        "24080cd591c9d721",
+        "24080cd591c9d721",
+        "24080cd591c9d721"
+      ],
+      "https://books.toscrape.com/catalogue/category/books/travel_2/index.html": [
+        "b76dc93f8a186cf5",
+        "b76dc93f8a186cf5",
+        "b76dc93f8a186cf5"
+      ],
+      "https://books.toscrape.com/catalogue/its-only-the-himalayas_981/index.html": [
+        "783557f36c01cb21",
+        "783557f36c01cb21",
+        "783557f36c01cb21"
+      ],
+      "https://books.toscrape.com/catalogue/full-moon-over-noahs-ark-an-odyssey-to-mount-ararat-and-beyond_811/index.html": [
+        "783557f36c01cb21",
+        "783557f36c01cb21",
+        "783557f36c01cb21"
+      ]
+    }
+  },
+  "quotes": {
+    "stable": true,
+    "productPagesMatch": true,
+    "categoryDiffers": true,
+    "urls": {
+      "https://quotes.toscrape.com/": [
+        "42f69429f9429bef",
+        "42f69429f9429bef",
+        "42f69429f9429bef"
+      ],
+      "https://quotes.toscrape.com/tag/love/": [
+        "e5ea7e16a1044700",
+        "e5ea7e16a1044700",
+        "e5ea7e16a1044700"
+      ],
+      "https://quotes.toscrape.com/author/Albert-Einstein/": [
+        "2df9eac42635387c",
+        "2df9eac42635387c",
+        "2df9eac42635387c"
+      ]
+    }
+  },
+  "openlibrary": {
+    "stable": true,
+    "productPagesMatch": true,
+    "categoryDiffers": true,
+    "urls": {
+      "https://openlibrary.org/": [
+        "ERR page.goto: net::ERR_CONNECTION_TIMED_OUT at https://openlibrary.org/\nCall log:\n\u001b",
+        "ERR page.goto: net::ERR_CONNECTION_TIMED_OUT at https://openlibrary.org/\nCall log:\n\u001b",
+        "ERR page.goto: net::ERR_CONNECTION_TIMED_OUT at https://openlibrary.org/\nCall log:\n\u001b"
+      ],
+      "https://openlibrary.org/works/OL45804W/editions": [
+        "ERR page.goto: net::ERR_CONNECTION_TIMED_OUT at https://openlibrary.org/works/OL4580",
+        "ERR page.goto: net::ERR_CONNECTION_TIMED_OUT at https://openlibrary.org/works/OL4580",
+        "ERR page.goto: net::ERR_CONNECTION_TIMED_OUT at https://openlibrary.org/works/OL4580"
+      ]
+    }
+  },
+  "wikipedia": {
+    "stable": true,
+    "productPagesMatch": true,
+    "categoryDiffers": true,
+    "urls": {
+      "https://en.wikipedia.org/wiki/Desire_path": [
+        "6dddc4d81b8eb53a",
+        "6dddc4d81b8eb53a",
+        "6dddc4d81b8eb53a"
+      ],
+      "https://en.wikipedia.org/wiki/Graph_database": [
+        "ec9d720778ee36ae",
+        "ec9d720778ee36ae",
+        "ec9d720778ee36ae"
+      ]
+    }
+  }
+}
