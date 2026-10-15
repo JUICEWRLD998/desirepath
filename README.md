@@ -33,3 +33,10 @@ npm run p0:sites    # signature stability on the demo sites
 ```
 
 Raw output is written to `spikes/out/` and copied into `DECISIONS.md`.
+
+## Tests
+
+```bash
+npm test                                   # 17 unit tests; the 7 database tests are skipped
+FALKORDB_URL=redis://... npm test          # all 24, against any FalkorDB (they create and delete their own graphs)
+```

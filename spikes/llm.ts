@@ -1,6 +1,7 @@
 // P0: one structured-output call through OpenRouter. Records model id + usage to spikes/out/llm.json.
 import "dotenv/config";
-import { writeFileSync } from "node:fs";
+import { mkdirSync, writeFileSync } from "node:fs";
+mkdirSync("spikes/out", { recursive: true });
 import { generateObject } from "ai";
 import { createOpenRouter } from "@openrouter/ai-sdk-provider";
 import { z } from "zod";
