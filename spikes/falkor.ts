@@ -4,10 +4,20 @@ import { mkdirSync, writeFileSync } from "node:fs";
 mkdirSync("spikes/out", { recursive: true });
 import { FalkorDB } from "falkordb";
 
-const url = process.env.FALKORDB_URL;
-if (!url) throw new Error("FALKORDB_URL missing (see .env.example)");
+const { FALKORDB_URL, FALKORDB_HOST, FALKORDB_PORT, FALKORDB_USERNAME, FALKORDB_PASSWORD, FALKORDB_TLS } = process.env;
+// Either FALKORDB_URL, or the separate FALKORDB_* fields (avoids URL-encoding problems with special characters in the password).
+const options = FALKORDB_HOST
+  ? { username: FALKORDB_USERNAME || "default", password: FALKORDB_PASSWORD,
+      socket: { host: FALKORDB_HOST, port: Number(FALKORDB_PORT || 6379), tls: FALKORDB_TLS === "true" } as never }
+  : FALKORDB_URL ? { url: FALKORDB_URL } : null;
+if (!options) throw new Error("Set FALKORDB_URL or FALKORDB_HOST (see .env.example)");
 const out: Record<string, unknown> = {};
-const db = await FalkorDB.connect({ url });
+const db = await FalkorDB.connect(options).catch((e: Error) => {
+  console.error("FalkorDB connection failed:", e.message);
+  if (/WRONGPASS/.test(e.message)) console.error("The host answered but rejected the username/password. Re-copy them from the FalkorDB Cloud instance page.");
+  process.exit(1);
+});
+db.on("error", (e: Error) => console.error("FalkorDB error:", e.message));
 const step = async (name: string, fn: () => Promise<unknown>) => {
   try { out[name] = { ok: true, result: await fn() }; }
   catch (e) { out[name] = { ok: false, error: (e as Error).message }; }
