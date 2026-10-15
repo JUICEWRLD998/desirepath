@@ -21,7 +21,7 @@ cp .env.example .env        # then fill in the keys, see below
 |---|---|
 | `FALKORDB_URL` | Create a free instance at <https://app.falkordb.cloud>, copy its connection string. Docs: <https://docs.falkordb.com/cloud> |
 | `OPENROUTER_API_KEY` | <https://openrouter.ai/keys> (credit: <https://openrouter.ai/credits>) |
-| `OPENROUTER_MODEL` | Pick a tool-calling model at <https://openrouter.ai/models> |
+| `OPENROUTER_MODEL` | `google/gemini-2.5-flash` (all models: <https://openrouter.ai/models>) |
 
 ## Phase 0 spikes
 
