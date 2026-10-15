@@ -1,0 +1,135 @@
+{
+  "version": {
+    "ok": true,
+    "result": 22
+  },
+  "roundtrip": {
+    "ok": true,
+    "result": {
+      "ms": 6.5746939999999086
+    }
+  },
+  "SPpaths_float_weight_pathCount3": {
+    "ok": true,
+    "result": [
+      {
+        "keys": [
+          "ac",
+          "cd",
+          "df"
+        ],
+        "pathWeight": 0.3,
+        "pathCost": 300
+      },
+      {
+        "keys": [
+          "ae",
+          "ef"
+        ],
+        "pathWeight": 1.2,
+        "pathCost": 200
+      },
+      {
+        "keys": [
+          "ab",
+          "bf"
+        ],
+        "pathWeight": 3,
+        "pathCost": 200
+      }
+    ]
+  },
+  "log_function": {
+    "ok": true,
+    "result": [
+      {
+        "x": 0.693147180559945
+      }
+    ]
+  },
+  "fulltext_create": {
+    "ok": true
+  },
+  "fulltext_query": {
+    "ok": true,
+    "result": [
+      {
+        "node.id": "g1",
+        "score": 1
+      }
+    ]
+  },
+  "pagerank": {
+    "ok": true,
+    "result": [
+      {
+        "node.n": "F",
+        "score": 0.384405851364136
+      },
+      {
+        "node.n": "D",
+        "score": 0.162081360816956
+      },
+      {
+        "node.n": "B",
+        "score": 0.0994885936379433
+      },
+      {
+        "node.n": "C",
+        "score": 0.0994885936379433
+      },
+      {
+        "node.n": "E",
+        "score": 0.0994885936379433
+      },
+      {
+        "node.n": "A",
+        "score": 0.0775234997272491
+      }
+    ]
+  },
+  "wcc": {
+    "ok": true,
+    "result": [
+      {
+        "node.n": "A",
+        "componentId": 0
+      },
+      {
+        "node.n": "B",
+        "componentId": 0
+      },
+      {
+        "node.n": "C",
+        "componentId": 0
+      },
+      {
+        "node.n": "D",
+        "componentId": 0
+      },
+      {
+        "node.n": "E",
+        "componentId": 0
+      },
+      {
+        "node.n": "F",
+        "componentId": 0
+      }
+    ]
+  },
+  "two_graphs": {
+    "ok": true,
+    "result": {
+      "public": [
+        {
+          "s.sig": "pub"
+        }
+      ],
+      "tenant": [
+        {
+          "s.sig": "ten"
+        }
+      ]
+    }
+  }
+}
