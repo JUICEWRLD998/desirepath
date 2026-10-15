@@ -8,6 +8,7 @@
     "p0:falkor": "tsx spikes/falkor.ts",
     "p0:llm": "tsx spikes/llm.ts",
     "p0:sites": "tsx spikes/signature.ts",
+    "test": "node --import tsx --test packages/core/tests/*.test.ts",
     "p0:net": "tsx spikes/net.ts"
   },
   "devDependencies": {
