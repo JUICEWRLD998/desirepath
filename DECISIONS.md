@@ -14,9 +14,9 @@ Phase 0 spike results. Raw output: `spikes/out/`. **Local** = a FalkorDB module 
 | Two graphs (`public:x`, `tenant:a:x`) in one request | pass | **not run** | colon names work and are isolated |
 | Playwright accessibility snapshot | pass (headless Chromium, `ariaSnapshot()`) | n/a | roles and names returned; quoted entries need the parser fix below |
 | OpenRouter structured output | n/a | **pass** | `google/gemini-2.5-flash`, valid `{kind, role, name, nth}`, 85 in / 24 out tokens, cost $0.0000855 (author's run) |
-| Signature stability on the 5 sites (§6.1) | URL/landmark logic unit-tested on fixtures | **not run** | needs network access to the demo sites; the sandbox blocks them |
+| Signature stability on the demo sites (§6.1) | unit-tested on fixtures | **partial (3 of 4 reachable)** | books, quotes, Wikipedia: 3 loads give one `sig`; two books product pages share a `sig`; category differs from product. Open Library: `ERR_CONNECTION_TIMED_OUT` on every load from the author's machine, so not measured. Test shop does not exist yet (Phase 2). Raw: `spikes/out/signature.json` |
 
-**Phase 0 is therefore NOT complete.** Missing: a successful Cloud connection, the 100 MB size check, and the live-site signature stability test.
+**Phase 0 is therefore NOT complete.** Missing: a successful Cloud connection (still `WRONGPASS` on 2026-10-15), the 100 MB size check, and Open Library in the signature test (host unreachable from the author's machine).
 
 ## Results worth keeping
 
@@ -36,6 +36,8 @@ Float weights are accepted; no need for the integer-scaling fallback.
 4. **Id detection is narrower than the first version.** `slug_123` collapses only when lowercase (books.toscrape), so Wikipedia's `Windows_10` and `Boeing_747` stay distinct. 12+ hex segments need a digit. `page-N.html` collapses.
 5. **Free-text goal lookup goes through `ftQuery()`** (OR-ed tokens). The raw full-text query is AND-ed and breaks on punctuation.
 6. **LLM:** `google/gemini-2.5-flash` via OpenRouter. The AI SDK warns that `generateObject` is deprecated; switch to `generateText` with an output setting when the agent loop is written (Phase 2).
+
+7. **Repeated item cards collapse.** Links inside `listitem > article` become `link:*` and each distinct card landmark is listed once. Without it two books.toscrape product pages got different signatures ("Products you recently viewed" cards carry other books' titles). Covered by `signature.test.ts`; confirmed on the live site.
 
 ## Known limitations (not fixed)
 
