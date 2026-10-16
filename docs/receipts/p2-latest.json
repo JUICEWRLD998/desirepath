@@ -1,0 +1,141 @@
+{
+  "model": "google/gemini-2.5-flash",
+  "site": "testshop-p2",
+  "rows": [
+    {
+      "label": "1. cold run (LLM explores)",
+      "mode": "cold",
+      "explore": false,
+      "layout": "a",
+      "outcome": "success",
+      "steps": 4,
+      "mapSteps": 0,
+      "failedMapSteps": 0,
+      "llmCalls": 4,
+      "tokens": 1180,
+      "seconds": 11.7,
+      "actions": [
+        "llm:ok [textbox] Search products -> type",
+        "llm:ok [button] Search -> click",
+        "llm:ok [button] Quick add -> click",
+        "llm:ok [link] Checkout -> click"
+      ]
+    },
+    {
+      "label": "2. map run (follow the route)",
+      "mode": "map",
+      "explore": false,
+      "layout": "a",
+      "outcome": "success",
+      "steps": 3,
+      "mapSteps": 3,
+      "failedMapSteps": 0,
+      "llmCalls": 0,
+      "tokens": 0,
+      "seconds": 0.6,
+      "actions": [
+        "map:ok [button] Search -> click",
+        "map:ok [button] Quick add -> click",
+        "map:ok [link] Checkout -> click"
+      ]
+    },
+    {
+      "label": "3.1 explore run (find a second route)",
+      "mode": "cold",
+      "explore": true,
+      "layout": "a",
+      "outcome": "success",
+      "steps": 5,
+      "mapSteps": 0,
+      "failedMapSteps": 0,
+      "llmCalls": 5,
+      "tokens": 1745,
+      "seconds": 8.7,
+      "actions": [
+        "llm:ok [textbox] Search products -> type",
+        "llm:ok [button] Search -> click",
+        "llm:ok [link] Trail Mug -> click",
+        "llm:ok [button] Add to basket -> click",
+        "llm:ok [link] Checkout -> click"
+      ]
+    },
+    {
+      "label": "4. map run after the redesign",
+      "mode": "map",
+      "explore": false,
+      "layout": "b",
+      "outcome": "success",
+      "steps": 5,
+      "mapSteps": 5,
+      "failedMapSteps": 1,
+      "llmCalls": 0,
+      "tokens": 0,
+      "seconds": 4.8,
+      "actions": [
+        "map:ok [button] Search -> click",
+        "map:FAIL [button] Quick add -> click",
+        "map:ok [link] Trail Mug -> click",
+        "map:ok [button] Add to basket -> click",
+        "map:ok [link] Checkout -> click"
+      ]
+    },
+    {
+      "label": "5.1 map run again (does the planner still pick the broken edge first?)",
+      "mode": "map",
+      "explore": false,
+      "layout": "b",
+      "outcome": "success",
+      "steps": 5,
+      "mapSteps": 5,
+      "failedMapSteps": 1,
+      "llmCalls": 0,
+      "tokens": 0,
+      "seconds": 4.9,
+      "actions": [
+        "map:ok [button] Search -> click",
+        "map:FAIL [button] Quick add -> click",
+        "map:ok [link] Trail Mug -> click",
+        "map:ok [button] Add to basket -> click",
+        "map:ok [link] Checkout -> click"
+      ]
+    },
+    {
+      "label": "5.2 map run again (does the planner still pick the broken edge first?)",
+      "mode": "map",
+      "explore": false,
+      "layout": "b",
+      "outcome": "success",
+      "steps": 4,
+      "mapSteps": 4,
+      "failedMapSteps": 0,
+      "llmCalls": 0,
+      "tokens": 0,
+      "seconds": 0.8,
+      "actions": [
+        "map:ok [button] Search -> click",
+        "map:ok [link] Trail Mug -> click",
+        "map:ok [button] Add to basket -> click",
+        "map:ok [link] Checkout -> click"
+      ]
+    },
+    {
+      "label": "summary",
+      "failuresBeforeHealing": 2
+    }
+  ],
+  "problems": [],
+  "stats": [
+    {
+      "mode": "cold",
+      "runs": 2,
+      "steps": 4.5,
+      "llm": 4.5
+    },
+    {
+      "mode": "map",
+      "runs": 4,
+      "steps": 4.25,
+      "llm": 0
+    }
+  ]
+}

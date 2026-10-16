@@ -67,9 +67,19 @@ try {
   expect(redesigned.failedMapSteps >= 1, "no map step failed after the redesign (the beat did not happen)");
   expect(redesigned.llmCalls === 0, `the detour needed ${redesigned.llmCalls} LLM calls (expected 0)`);
 
-  const healed = await go("5. map run again (the map has learned)", "map");
-  expect(healed.outcome === "success", "the follow-up map run failed");
-  expect(healed.failedMapSteps <= redesigned.failedMapSteps, "the follow-up run failed more steps than the first redesigned run");
+  // One failure cannot outweigh the successes the edge already has (risk = -ln((ok+1)/(ok+fail+2))), so the first choice
+  // flips only after a few agents hit the broken edge. Measure how many, instead of assuming it is one.
+  let failuresBeforeHealing = redesigned.failedMapSteps;
+  let healed: RunResult | undefined;
+  for (let n = 1; n <= 6; n++) {
+    healed = await go(`5.${n} map run again (does the planner still pick the broken edge first?)`, "map");
+    expect(healed.outcome === "success", "a follow-up map run failed");
+    if (healed.failedMapSteps === 0) break;
+    failuresBeforeHealing += healed.failedMapSteps;
+  }
+  console.log(`\nthe broken edge was tried and failed ${failuresBeforeHealing} time(s) before the planner stopped choosing it`);
+  expect(healed?.failedMapSteps === 0, "the planner kept choosing the broken edge through 6 runs");
+  rows.push({ label: "summary", failuresBeforeHealing });
 } finally {
   mkdirSync("docs/receipts", { recursive: true });
   const stats = (await g.query("MATCH (r:Run) RETURN r.mode AS mode, count(r) AS runs, avg(r.steps) AS steps, avg(r.llm_calls) AS llm")).data;
