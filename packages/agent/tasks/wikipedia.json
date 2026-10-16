@@ -1,0 +1,22 @@
+[
+  {
+    "id": "wikipedia-desire-path-erosion",
+    "site": "en.wikipedia.org",
+    "baseUrl": "https://en.wikipedia.org",
+    "start": "/wiki/Desire_path",
+    "minIntervalMs": 1000,
+    "text": "From the article on Desire path, open the linked article {topic}",
+    "slots": { "topic": "Erosion" },
+    "goal": { "path": "/wiki/{topic}" }
+  },
+  {
+    "id": "wikipedia-desire-path-yosemite",
+    "site": "en.wikipedia.org",
+    "baseUrl": "https://en.wikipedia.org",
+    "start": "/wiki/Desire_path",
+    "minIntervalMs": 1000,
+    "text": "From the article on Desire path, open the linked article {topic}",
+    "slots": { "topic": "Yosemite_National_Park" },
+    "goal": { "path": "/wiki/{topic}" }
+  }
+]

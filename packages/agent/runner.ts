@@ -9,6 +9,8 @@ import { connect, ensureSchema, graphName } from "../core/graph.ts";
 import { fill, type Task } from "./task.ts";
 import { runTask } from "./loop.ts";
 import { openRouterProposer } from "./llm.ts";
+import { fetchRobots } from "./robots.ts";
+import { newAgentContext } from "./browser.ts";
 
 function arg(name: string): string | undefined {
   const i = process.argv.indexOf(`--${name}`);
@@ -34,8 +36,10 @@ if (process.argv[1]?.replaceAll("\\", "/").endsWith("packages/agent/runner.ts"))
   await ensureSchema(graph);
   const browser = await chromium.launch({ headless: !flag("headed"), executablePath: process.env.CHROMIUM_PATH });
   try {
-    const page = await (await browser.newContext()).newPage();
-    const result = await runTask({ graph, page, task, mode, tenant, explore: flag("explore"), propose: openRouterProposer(),
+    const real = !/^(127\.0\.0\.1|localhost)$/.test(new URL(task.baseUrl).hostname);   // real sites: say who we are, obey robots.txt
+    const robots = real ? await fetchRobots(new URL(task.baseUrl).origin) : undefined;
+    const page = await (await newAgentContext(browser, { identify: real })).newPage();
+    const result = await runTask({ graph, page, task, mode, tenant, robots, explore: flag("explore"), propose: openRouterProposer(),
       maxSteps: arg("max-steps") ? Number(arg("max-steps")) : undefined, log: console.log });
     console.log(JSON.stringify({ outcome: result.outcome, steps: result.steps.length, mapSteps: result.mapSteps,
       failedMapSteps: result.failedMapSteps, llmCalls: result.llmCalls, tokens: result.tokens, ms: result.ms }, null, 2));

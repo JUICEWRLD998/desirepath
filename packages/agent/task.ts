@@ -9,8 +9,10 @@ export interface Task {
   start: string;
   text: string;
   slots: Record<string, string>;
+  /** Minimum gap between the agent's actions on this site (real sites: 1000, plan §3). */
+  minIntervalMs?: number;
   goal: {
-    /** Path of the URL template the final screen must have, e.g. "/checkout" or "/product/:id". */
+    /** Path of the URL template the final screen must have, e.g. "/checkout", "/product/:id" or "/wiki/{title}". */
     path: string;
     /** Strings that must all appear on the final page (case-insensitive). `{slot}` is replaced by the slot value. */
     textIncludes?: string[];
@@ -20,7 +22,11 @@ export interface Task {
 export const fill = (s: string, slots: Record<string, string>) => s.replace(/\{(\w+)\}/g, (_, k: string) => slots[k] ?? `{${k}}`);
 
 export function goalMet(task: Task, obs: { url: string; text: string }): boolean {
-  if (new URL(urlTemplate(obs.url)).pathname !== task.goal.path) return false;
+  let got = new URL(urlTemplate(obs.url)).pathname;
+  try { got = decodeURIComponent(got); } catch { /* keep the raw path */ }
+  const want = fill(task.goal.path, task.slots);
+  // a trailing * matches any path below that prefix, e.g. "/author/*"
+  if (want.endsWith("*") ? !got.startsWith(want.slice(0, -1)) : got !== want) return false;
   const text = obs.text.toLowerCase();
   return (task.goal.textIncludes ?? []).every(t => text.includes(fill(t, task.slots).toLowerCase()));
 }

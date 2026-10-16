@@ -13,7 +13,8 @@
     "shop": "tsx apps/testshop/server.ts",
     "agent": "tsx packages/agent/runner.ts",
     "typecheck": "tsc --noEmit",
-    "p2": "tsx scripts/p2_demo.ts"
+    "p2": "tsx scripts/p2_demo.ts",
+    "p3": "tsx scripts/p3_runs.ts"
   },
   "devDependencies": {
     "@types/node": "^26.6.5",

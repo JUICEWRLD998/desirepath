@@ -7,7 +7,7 @@ import type { Known } from "../core/graph.ts";
 import type { Candidate, Observation } from "./observe.ts";
 import type { Task } from "./task.ts";
 
-export const MAX_CANDIDATES = 60;
+export const MAX_CANDIDATES = 150;
 
 export interface ProposeInput {
   task: Task;

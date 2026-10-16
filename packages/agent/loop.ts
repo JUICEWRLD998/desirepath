@@ -9,6 +9,7 @@ import { actionKey } from "../core/signature.ts";
 import { execute, type Action, type ExecResult } from "./execute.ts";
 import { MAX_CANDIDATES, describe, type Proposer } from "./llm.ts";
 import { observe, type Kind, type Observation } from "./observe.ts";
+import type { Robots } from "./robots.ts";
 import { goalMet, type Task } from "./task.ts";
 
 export interface RunOptions {
@@ -23,6 +24,10 @@ export interface RunOptions {
   explore?: boolean;
   maxSteps?: number;
   actionTimeout?: number;
+  /** Never navigate to a path this robots.txt disallows (main-frame navigations are aborted). */
+  robots?: Robots;
+  /** Gap between actions; defaults to the task's `minIntervalMs`. */
+  minIntervalMs?: number;
   now?: () => number;
   log?: (line: string) => void;
 }
@@ -63,7 +68,25 @@ export async function runTask(o: RunOptions): Promise<RunResult> {
   const slotNames = Object.keys(task.slots);
   let fills: Fill[] = [];
   let llmCalls = 0, tokens = 0, llmErrors = 0, outcome: "success" | "failure" = "failure";
+
+  // politeness: one action per interval, and no navigation robots.txt forbids
+  const interval = o.minIntervalMs ?? task.minIntervalMs ?? 0;
+  let lastAt = 0;
+  const pace = async () => {
+    const wait = lastAt + interval - now();
+    if (wait > 0) await new Promise(r => setTimeout(r, wait));
+    lastAt = now();
+  };
+  const robots = o.robots;
+  const guard = robots ? async (route: import("playwright").Route) => {
+    const req = route.request();
+    if (req.isNavigationRequest() && req.frame() === page.mainFrame() && !robots.allows(req.url())) await route.abort("blockedbyclient");
+    else await route.continue();
+  } : undefined;
   try {
+    if (guard) await page.route("**/*", guard);
+    if (robots && !robots.allows(new URL(task.start, task.baseUrl).href)) throw new Error(`robots.txt disallows the start page ${task.start}`);
+    await pace();
     await page.goto(new URL(task.start, task.baseUrl).href, { waitUntil: "load", timeout: 30_000 });
     const goalSig = o.mode === "map" ? (await goalCandidates(g, task.text))[0]?.goalSig : undefined;
     let cur = await observeSettled(page);
@@ -109,6 +132,7 @@ export async function runTask(o: RunOptions): Promise<RunResult> {
       }
 
       const label = `[${action.role}] ${action.name} -> ${action.kind}`;
+      await pace();
       const ts = now();
       let res: ExecResult = { ok: true };
       for (const f of pre) { res = await execute(page, f, task.slots, timeout); if (!res.ok) break; }   // replay the stored fills
@@ -161,6 +185,7 @@ export async function runTask(o: RunOptions): Promise<RunResult> {
 
     if (outcome === "success") await recordReach(g, { id: task.id, text: task.text, site: task.site, sig: cur.screen.sig, now: now() });
   } finally {
+    if (guard) await page.unroute("**/*", guard).catch(() => {});
     await endRun(g, { id: runId, now: now(), outcome, steps: logs.length, llm: llmCalls, tokens, ms: now() - t0 });
   }
   return { runId, outcome, steps: logs, llmCalls, tokens, ms: now() - t0,

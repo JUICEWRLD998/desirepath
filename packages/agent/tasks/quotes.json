@@ -1,0 +1,22 @@
+[
+  {
+    "id": "quotes-tag-author",
+    "site": "quotes.toscrape.com",
+    "baseUrl": "https://quotes.toscrape.com",
+    "start": "/",
+    "minIntervalMs": 1000,
+    "text": "Open the author page of the first quote tagged {tag}",
+    "slots": { "tag": "love" },
+    "goal": { "path": "/author/*", "textIncludes": ["Born:"] }
+  },
+  {
+    "id": "quotes-tag-page2",
+    "site": "quotes.toscrape.com",
+    "baseUrl": "https://quotes.toscrape.com",
+    "start": "/",
+    "minIntervalMs": 1000,
+    "text": "Open page 2 of the quotes tagged {tag}",
+    "slots": { "tag": "love" },
+    "goal": { "path": "/tag/{tag}/page/:id/" }
+  }
+]
