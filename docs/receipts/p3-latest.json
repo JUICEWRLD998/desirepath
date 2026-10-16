@@ -1,0 +1,125 @@
+{
+  "model": "google/gemini-2.5-flash",
+  "verdict": {
+    "books-default-page3": {
+      "coldSteps": [
+        3,
+        3
+      ],
+      "mapSteps": [
+        3,
+        3
+      ],
+      "mapFewerThanColdMean": false
+    },
+    "quotes-page3": {
+      "coldSteps": [
+        2,
+        2
+      ],
+      "mapSteps": [
+        2,
+        2
+      ],
+      "mapFewerThanColdMean": false
+    }
+  },
+  "runs": [
+    {
+      "task": "books-default-page3",
+      "mode": "cold",
+      "n": 1,
+      "outcome": "success",
+      "steps": 3,
+      "mapSteps": 0,
+      "failedMapSteps": 0,
+      "llmCalls": 3,
+      "tokens": 5229,
+      "seconds": 24.7
+    },
+    {
+      "task": "books-default-page3",
+      "mode": "cold",
+      "n": 2,
+      "outcome": "success",
+      "steps": 3,
+      "mapSteps": 0,
+      "failedMapSteps": 0,
+      "llmCalls": 3,
+      "tokens": 5229,
+      "seconds": 18.6
+    },
+    {
+      "task": "books-default-page3",
+      "mode": "map",
+      "n": 1,
+      "outcome": "success",
+      "steps": 3,
+      "mapSteps": 2,
+      "failedMapSteps": 0,
+      "llmCalls": 1,
+      "tokens": 1726,
+      "seconds": 16
+    },
+    {
+      "task": "books-default-page3",
+      "mode": "map",
+      "n": 2,
+      "outcome": "success",
+      "steps": 3,
+      "mapSteps": 2,
+      "failedMapSteps": 0,
+      "llmCalls": 1,
+      "tokens": 1726,
+      "seconds": 23
+    },
+    {
+      "task": "quotes-page3",
+      "mode": "cold",
+      "n": 1,
+      "outcome": "success",
+      "steps": 2,
+      "mapSteps": 0,
+      "failedMapSteps": 0,
+      "llmCalls": 2,
+      "tokens": 1944,
+      "seconds": 9.8
+    },
+    {
+      "task": "quotes-page3",
+      "mode": "cold",
+      "n": 2,
+      "outcome": "success",
+      "steps": 2,
+      "mapSteps": 0,
+      "failedMapSteps": 0,
+      "llmCalls": 2,
+      "tokens": 1944,
+      "seconds": 10.2
+    },
+    {
+      "task": "quotes-page3",
+      "mode": "map",
+      "n": 1,
+      "outcome": "success",
+      "steps": 2,
+      "mapSteps": 2,
+      "failedMapSteps": 0,
+      "llmCalls": 0,
+      "tokens": 0,
+      "seconds": 9.3
+    },
+    {
+      "task": "quotes-page3",
+      "mode": "map",
+      "n": 2,
+      "outcome": "success",
+      "steps": 2,
+      "mapSteps": 2,
+      "failedMapSteps": 0,
+      "llmCalls": 0,
+      "tokens": 0,
+      "seconds": 8.6
+    }
+  ]
+}

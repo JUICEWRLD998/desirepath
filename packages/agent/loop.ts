@@ -2,7 +2,7 @@
 // Cold mode is the honest baseline: same loop, planner off, map still recorded.
 import { randomUUID } from "node:crypto";
 import type { Page } from "playwright";
-import { endRun, goalCandidates, outgoing, plan, recordReach, recordStep, report, startRun,
+import { endRun, goalCandidates, goalSigById, outgoing, plan, recordReach, recordStep, report, startRun,
   type Graph, type ReportParams, type Screen } from "../core/graph.ts";
 import { chooseRoute, edgeId } from "../core/route.ts";
 import { actionKey } from "../core/signature.ts";
@@ -88,7 +88,8 @@ export async function runTask(o: RunOptions): Promise<RunResult> {
     if (robots && !robots.allows(new URL(task.start, task.baseUrl).href)) throw new Error(`robots.txt disallows the start page ${task.start}`);
     await pace();
     await page.goto(new URL(task.start, task.baseUrl).href, { waitUntil: "load", timeout: 30_000 });
-    const goalSig = o.mode === "map" ? (await goalCandidates(g, task.text))[0]?.goalSig : undefined;
+    // A scripted task names its goal by id (plan §6.5); free text is only the fallback.
+    const goalSig = o.mode === "map" ? (await goalSigById(g, task.id)) ?? (await goalCandidates(g, task.text))[0]?.goalSig : undefined;
     let cur = await observeSettled(page);
 
     for (let i = 1; ; i++) {
@@ -108,6 +109,11 @@ export async function runTask(o: RunOptions): Promise<RunResult> {
           pre = s.pre ? JSON.parse(s.pre) as Fill[] : [];
           source = "map"; expectedTo = s.to; key = s.key;
         }
+      }
+      if (!action && goalSig === cur.screen.sig) {
+        // On the goal's screen but not done (page 3 shares a screen with page 2): repeat the most-walked loop edge from here.
+        const again = (await outgoing(g, cur.screen.sig)).find(k => k.to === cur.screen.sig && k.ok > 0 && !failed.has(edgeId(cur.screen.sig, k.key)));
+        if (again) { action = { kind: "click", role: again.role, name: again.name, nth: again.nth }; source = "map"; expectedTo = cur.screen.sig; key = again.key; }
       }
       if (!action) {
         const known = o.explore ? await outgoing(g, cur.screen.sig) : [];
@@ -164,7 +170,7 @@ export async function runTask(o: RunOptions): Promise<RunResult> {
         }
       } else if (action.kind === "click") {
         // An LLM click becomes an edge only if it worked: it must have moved the page.
-        ok = res.ok && nxt.screen.sig !== cur.screen.sig;
+        ok = res.ok && (nxt.screen.sig !== cur.screen.sig || nxt.url !== cur.url);   // same-template pages (page 2 to 3) change the URL, not the screen
         if (ok) await report(g, edge(nxt.screen, true, fills));
         else deadEnds.add(`${cur.screen.sig}|${key}`);
         await recordStep(g, { run: runId, i, key, ok, ms, source, from: cur.screen, to: ok ? nxt.screen : cur.screen, observed: nxt.screen.sig, now: now() });
@@ -179,7 +185,7 @@ export async function runTask(o: RunOptions): Promise<RunResult> {
       }
       logs.push({ i, source, action: label, ok, ms, from: cur.screen.title, observed: nxt.screen.title, error: res.error });
       log(`${i}. [${source}] ${label} ${ok ? "ok" : "FAILED"} (${ms} ms) ${cur.screen.title} -> ${nxt.screen.title}`);
-      if (nxt.screen.sig !== cur.screen.sig || source === "map") fills = [];
+      if (nxt.screen.sig !== cur.screen.sig || nxt.url !== cur.url || source === "map") fills = [];
       cur = nxt;
     }
 

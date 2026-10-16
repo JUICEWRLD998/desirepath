@@ -6,8 +6,15 @@
     "start": "/",
     "minIntervalMs": 1000,
     "text": "Open the author page of the first quote tagged {tag}",
-    "slots": { "tag": "love" },
-    "goal": { "path": "/author/*", "textIncludes": ["Born:"] }
+    "slots": {
+      "tag": "love"
+    },
+    "goal": {
+      "path": "/author/*",
+      "textIncludes": [
+        "Born:"
+      ]
+    }
   },
   {
     "id": "quotes-tag-page2",
@@ -16,7 +23,24 @@
     "start": "/",
     "minIntervalMs": 1000,
     "text": "Open page 2 of the quotes tagged {tag}",
-    "slots": { "tag": "love" },
-    "goal": { "path": "/tag/{tag}/page/:id/" }
+    "slots": {
+      "tag": "love"
+    },
+    "goal": {
+      "path": "/tag/{tag}/page/:id/"
+    }
+  },
+  {
+    "id": "quotes-page3",
+    "site": "quotes.toscrape.com",
+    "baseUrl": "https://quotes.toscrape.com",
+    "start": "/",
+    "minIntervalMs": 1000,
+    "text": "Open page 3 of the quotes",
+    "slots": {},
+    "goal": {
+      "path": "/page/:id/",
+      "urlIncludes": "/page/3/"
+    }
   }
 ]

@@ -16,6 +16,8 @@ export interface Task {
     path: string;
     /** Strings that must all appear on the final page (case-insensitive). `{slot}` is replaced by the slot value. */
     textIncludes?: string[];
+    /** The raw URL must contain this (`{slot}` allowed). Needed where the template cannot tell pages apart, e.g. "/page/3/". */
+    urlIncludes?: string;
   };
 }
 
@@ -27,6 +29,7 @@ export function goalMet(task: Task, obs: { url: string; text: string }): boolean
   const want = fill(task.goal.path, task.slots);
   // a trailing * matches any path below that prefix, e.g. "/author/*"
   if (want.endsWith("*") ? !got.startsWith(want.slice(0, -1)) : got !== want) return false;
+  if (task.goal.urlIncludes && !obs.url.includes(fill(task.goal.urlIncludes, task.slots))) return false;
   const text = obs.text.toLowerCase();
   return (task.goal.textIncludes ?? []).every(t => text.includes(fill(t, task.slots).toLowerCase()));
 }

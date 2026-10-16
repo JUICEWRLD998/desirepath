@@ -6,8 +6,16 @@
     "start": "/",
     "minIntervalMs": 1000,
     "text": "Open page 2 of the {category} category",
-    "slots": { "category": "Mystery" },
-    "goal": { "path": "/catalogue/category/books/:id/:id", "textIncludes": ["{category}", "page 2 of 2"] }
+    "slots": {
+      "category": "Mystery"
+    },
+    "goal": {
+      "path": "/catalogue/category/books/:id/:id",
+      "textIncludes": [
+        "{category}",
+        "page 2 of 2"
+      ]
+    }
   },
   {
     "id": "books-open-book",
@@ -16,7 +24,34 @@
     "start": "/",
     "minIntervalMs": 1000,
     "text": "Open the book {book} from the {category} category",
-    "slots": { "category": "Travel", "book": "Under the Tuscan Sun" },
-    "goal": { "path": "/catalogue/:id/index.html", "textIncludes": ["{book}"] }
+    "slots": {
+      "category": "Travel",
+      "book": "Under the Tuscan Sun"
+    },
+    "goal": {
+      "path": "/catalogue/:id/index.html",
+      "textIncludes": [
+        "{book}"
+      ]
+    }
+  },
+  {
+    "id": "books-default-page3",
+    "site": "books.toscrape.com",
+    "baseUrl": "https://books.toscrape.com",
+    "start": "/",
+    "minIntervalMs": 1000,
+    "text": "Open page 3 of the {category} category",
+    "slots": {
+      "category": "Default"
+    },
+    "goal": {
+      "path": "/catalogue/category/books/:id/:id",
+      "textIncludes": [
+        "{category}",
+        "page 3 of 8"
+      ],
+      "urlIncludes": "page-3.html"
+    }
   }
 ]

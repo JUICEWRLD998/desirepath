@@ -1,7 +1,7 @@
 // Needs a FalkorDB: FALKORDB_URL=redis://127.0.0.1:6390 npm test. Skipped otherwise.
 import { test, before, after } from "node:test";
 import assert from "node:assert/strict";
-import { connect, endRun, ensureSchema, goalCandidates, graphName, outgoing, recordReach, recordStep, report, startRun,
+import { connect, endRun, ensureSchema, goalCandidates, goalSigById, graphName, outgoing, recordReach, recordStep, report, startRun,
   type ReportParams, type Screen } from "../graph.ts";
 
 const run = `e${process.pid}`;
@@ -66,6 +66,19 @@ test("recordReach creates the goal once, counts repeats, and is found by free te
   const found = await goalCandidates(g, "Please add a trail mug to my cart, then check out!");
   assert.equal(found[0]?.goalSig, "DONE");
   assert.equal(found[0]?.times, 2);
+});
+
+test("a scripted task finds its goal by id even when another goal's text overlaps; snake_case words match", { skip }, async () => {
+  const g = graph("goalid"); await ensureSchema(g);
+  await report(g, edge("A", "EROSION", "k1", 1)); await report(g, edge("A", "YOSEMITE", "k2", 1));
+  const open = "From the article on Desire path, open the linked article";
+  await recordReach(g, { id: "wiki-erosion", text: `${open} Erosion`, site: "w", sig: "EROSION", now: 1 });
+  await recordReach(g, { id: "wiki-yosemite", text: `${open} Yosemite_National_Park`, site: "w", sig: "YOSEMITE", now: 2 });
+  assert.equal(await goalSigById(g, "wiki-yosemite"), "YOSEMITE");
+  assert.equal(await goalSigById(g, "wiki-erosion"), "EROSION");
+  assert.equal(await goalSigById(g, "never-run"), undefined);
+  assert.equal((await goalCandidates(g, `${open} Yosemite_National_Park`))[0]?.goalSig, "YOSEMITE");
+  assert.equal((await goalCandidates(g, `${open} Yosemite National Park`))[0]?.goalSig, "YOSEMITE");
 });
 
 test("outgoing lists what the map knows from a screen, most-walked first", { skip }, async () => {

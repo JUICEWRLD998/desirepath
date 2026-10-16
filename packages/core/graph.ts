@@ -10,7 +10,7 @@ export type Graph = G;
 const query = (name: string) => readFileSync(new URL(`./queries/${name}.cypher`, import.meta.url), "utf8");
 const SQL = {
   report: query("report"), plan: query("plan"), goals: query("goals"), stats: query("stats"),
-  runStart: query("run_start"), runEnd: query("run_end"), step: query("step"), goal: query("goal"), outgoing: query("outgoing"),
+  runStart: query("run_start"), runEnd: query("run_end"), step: query("step"), goal: query("goal"), outgoing: query("outgoing"), goalById: query("goal_by_id"),
 };
 
 export function graphName(site: string, tenant?: string): string {
@@ -72,7 +72,9 @@ export async function plan(g: G, current: string, goal: string, maxMs = 60_000):
 /** Full-text queries are AND-ed by default and break on punctuation; reduce free text to OR-ed word tokens. */
 const STOP = new Set(["the", "a", "an", "of", "to", "in", "on", "and", "or", "for", "with", "from", "find", "open", "go", "get", "is", "it"]);
 export function ftQuery(text: string): string {
-  const tokens = text.toLowerCase().match(/[a-z0-9]+/g)?.filter(t => !STOP.has(t) && t.length > 1) ?? [];
+  // The index keeps snake_case words whole (Yosemite_National_Park), so offer both the whole word and its parts.
+  const words = text.toLowerCase().match(/[a-z0-9_]+/g) ?? [];
+  const tokens = words.flatMap(w => (w.includes("_") ? [w, ...w.split("_")] : [w])).filter(t => t.length > 1 && !STOP.has(t));
   return [...new Set(tokens)].join("|");
 }
 
@@ -80,6 +82,11 @@ export async function goalCandidates(g: G, text: string) {
   const q = ftQuery(text);
   if (!q) return [];
   return (await g.query(SQL.goals, { params: { text: q } })).data as Array<{ goalSig: string; goalText: string; score: number; times: number }>;
+}
+
+/** The goal screen of a scripted task, by exact goal id; undefined if no run has reached it yet. */
+export async function goalSigById(g: G, id: string): Promise<string | undefined> {
+  return ((await g.query(SQL.goalById, { params: { id } })).data as Array<{ goalSig: string }>)[0]?.goalSig;
 }
 
 export async function stats(g: G) { return (await g.query(SQL.stats)).data; }
@@ -111,7 +118,8 @@ export async function recordStep(g: G, s: StepRecord): Promise<void> {
 
 /** The screen `sig` satisfied the task `id`. Creates the Goal on first success. */
 export async function recordReach(g: G, p: { id: string; text: string; site: string; sig: string; now: number }): Promise<number> {
-  const r = (await g.query(SQL.goal, { params: p as never })).data![0] as Record<string, number>;
+  // The full-text index keeps snake_case words whole, so store goal text with spaces: both spellings then match.
+  const r = (await g.query(SQL.goal, { params: { ...p, text: p.text.replaceAll("_", " ") } as never })).data![0] as Record<string, number>;
   return Object.values(r)[0];
 }
 
