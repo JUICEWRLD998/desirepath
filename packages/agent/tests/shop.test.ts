@@ -90,6 +90,9 @@ test("typing needs a slot value, and a missing one fails without touching the pa
     assert.equal((await execute(page, { kind: "type", role: "textbox", name: "Search products", nth: 0, slot: "query" }, {})).ok, false);
     assert.equal((await execute(page, { kind: "type", role: "textbox", name: "Search products", nth: 0, slot: "query" }, { query: "mug" })).ok, true);
     assert.equal(await page.getByRole("textbox", { name: "Search products" }).inputValue(), "mug");
+    // the next observation shows the agent that the field is already filled
+    const box = (await observe(page)).candidates.find(c => c.role === "textbox");
+    assert.equal(box?.value, "mug");
   } finally { await close(); }
 });
 

@@ -8,7 +8,7 @@ import { risk } from "../risk.ts";
 const url = process.env.FALKORDB_URL;
 const q = (f: string) => readFileSync(new URL(`../queries/${f}`, import.meta.url), "utf8");
 const base = { from: "s1", fromUrl: "u1", fromTitle: "t1", fromLandmarks: ["a"], to: "s2", toUrl: "u2", toTitle: "t2",
-  toLandmarks: ["b"], key: "click:link:x:0", kind: "click", role: "link", name: "x", nth: 0, label: "[link] x -> click", slot: "", now: 1 };
+  toLandmarks: ["b"], key: "click:link:x:0", kind: "click", role: "link", name: "x", nth: 0, label: "[link] x -> click", slot: "", pre: "", now: 1 };
 const name = `test_report_${process.pid}`;
 let db: Awaited<ReturnType<typeof FalkorDB.connect>> | undefined;
 after(async () => { if (db) { await db.selectGraph(name).delete().catch(() => {}); await db.close(); } });

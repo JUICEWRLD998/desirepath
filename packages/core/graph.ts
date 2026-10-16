@@ -44,17 +44,19 @@ export interface ReportParams {
   key: string; kind: string; role: string; name: string; nth: number; label: string;
   /** Task slot a typed value comes from ("" if none). The value itself is never stored. */
   slot?: string;
+  /** JSON list of fills ({kind, role, name, nth, slot}) the agent made on the source screen before this click. Slot names only, never values. */
+  pre?: string;
   ok: 0 | 1; fail: 0 | 1; ms: number; now: number;
 }
 export interface EdgeStats { ok: number; fail: number; ms: number; risk: number }
 
 export async function report(g: G, p: ReportParams): Promise<EdgeStats> {
   if (p.ok + p.fail !== 1) throw new Error("report: exactly one of ok/fail must be 1");
-  const r = (await g.query(SQL.report, { params: { ...p, slot: p.slot ?? "" } as never })).data![0] as Record<string, number>;
+  const r = (await g.query(SQL.report, { params: { ...p, slot: p.slot ?? "", pre: p.pre ?? "" } as never })).data![0] as Record<string, number>;
   return { ok: r["e.ok"], fail: r["e.fail"], ms: r["e.ms"], risk: r["e.risk"] };
 }
 
-export interface Step { key: string; to: string; kind: string; role: string; name: string; nth: number; slot?: string; ok: number; fail: number; ms: number }
+export interface Step { key: string; to: string; kind: string; role: string; name: string; nth: number; slot?: string; pre?: string; ok: number; fail: number; ms: number }
 export interface Route { steps: Step[]; hops: number; weight: number; ms: number; pSuccess: number }
 
 /** Up to three routes, lowest risk first. Empty if either screen is unknown or no route exists. */

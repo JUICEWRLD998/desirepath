@@ -6,7 +6,7 @@ import { endRun, goalCandidates, outgoing, plan, recordReach, recordStep, report
   type Graph, type ReportParams, type Screen } from "../core/graph.ts";
 import { chooseRoute, edgeId } from "../core/route.ts";
 import { actionKey } from "../core/signature.ts";
-import { execute, type Action } from "./execute.ts";
+import { execute, type Action, type ExecResult } from "./execute.ts";
 import { MAX_CANDIDATES, describe, type Proposer } from "./llm.ts";
 import { observe, type Kind, type Observation } from "./observe.ts";
 import { goalMet, type Task } from "./task.ts";
@@ -41,6 +41,12 @@ async function observeSettled(page: Page): Promise<Observation> {
 
 const MAX_LLM_ERRORS = 3;
 
+/**
+ * Filling a field changes no screen, so it cannot be an edge of its own. The fills made on a screen are stored on the
+ * click that leaves it ("fill the search box from slot `query`, then click Search"), as slot names only, never values.
+ */
+type Fill = Action & { slot: string };
+
 export async function runTask(o: RunOptions): Promise<RunResult> {
   const { graph: g, page, task } = o;
   const now = o.now ?? Date.now;
@@ -51,8 +57,11 @@ export async function runTask(o: RunOptions): Promise<RunResult> {
   await startRun(g, { id: runId, agent: o.agent ?? "agent-1", tenant: o.tenant, task: task.text, mode: o.mode, now: t0 });
 
   const logs: StepLog[] = [];
-  const failed = new Set<string>();   // edges that failed in THIS run; never retried within it
+  const failed = new Set<string>();    // map edges that failed in THIS run; never retried within it
+  const deadEnds = new Set<string>();  // LLM actions that did nothing on a screen in THIS run; not offered again there
   const history: string[] = [];
+  const slotNames = Object.keys(task.slots);
+  let fills: Fill[] = [];
   let llmCalls = 0, tokens = 0, llmErrors = 0, outcome: "success" | "failure" = "failure";
   try {
     await page.goto(new URL(task.start, task.baseUrl).href, { waitUntil: "load", timeout: 30_000 });
@@ -67,42 +76,51 @@ export async function runTask(o: RunOptions): Promise<RunResult> {
       let source: "map" | "llm" = "llm";
       let expectedTo = "";
       let key = "";
+      let pre: Fill[] = [];
       if (goalSig) {
         const route = chooseRoute(await plan(g, cur.screen.sig, goalSig), cur.screen.sig, failed);
         if (route) {
           const s = route.steps[0];
           action = { kind: s.kind as Kind, role: s.role, name: s.name, nth: s.nth, slot: s.slot || undefined };
+          pre = s.pre ? JSON.parse(s.pre) as Fill[] : [];
           source = "map"; expectedTo = s.to; key = s.key;
         }
       }
       if (!action) {
         const known = o.explore ? await outgoing(g, cur.screen.sig) : [];
+        const offered: Observation = { ...cur, candidates: cur.candidates.filter(c => !deadEnds.has(`${cur.screen.sig}|${actionKey(c.kind, c.role, c.name, c.nth)}`)) };
         llmCalls++;
         let p;
-        try { p = await o.propose({ task, obs: cur, history, known, explore: !!o.explore }); }
+        try { p = await o.propose({ task, obs: offered, history, known, explore: !!o.explore }); }
         catch (e) {
           if (++llmErrors >= MAX_LLM_ERRORS) throw new Error(`LLM failed ${MAX_LLM_ERRORS} times: ${(e as Error).message}`);
           history.push("The previous answer was not usable."); log(`${i}. LLM error: ${(e as Error).message.split("\n")[0]}`);
           continue;
         }
         llmErrors = 0; tokens += p.tokens;
-        const c = p.index >= 1 && p.index <= Math.min(cur.candidates.length, MAX_CANDIDATES) ? cur.candidates[p.index - 1] : undefined;
+        const c = p.index >= 1 && p.index <= Math.min(offered.candidates.length, MAX_CANDIDATES) ? offered.candidates[p.index - 1] : undefined;
         if (!c) { history.push(`Choice ${p.index} is not on the list.`); log(`${i}. LLM chose ${p.index}: not on the list`); continue; }
-        action = { kind: c.kind, role: c.role, name: c.name, nth: c.nth, slot: c.kind === "click" ? undefined : p.slot ?? undefined };
+        if (c.kind !== "click" && (!p.slot || !slotNames.includes(p.slot))) {
+          history.push(`${describe(c)} needs a slot name (one of: ${slotNames.join(", ") || "none"}).`);
+          log(`${i}. LLM chose ${describe(c)} without a valid slot`); continue;
+        }
+        action = { kind: c.kind, role: c.role, name: c.name, nth: c.nth, slot: c.kind === "click" ? undefined : p.slot! };
         key = actionKey(action.kind, action.role, action.name, action.nth);
       }
 
       const label = `[${action.role}] ${action.name} -> ${action.kind}`;
       const ts = now();
-      const res = await execute(page, action, task.slots, timeout);
+      let res: ExecResult = { ok: true };
+      for (const f of pre) { res = await execute(page, f, task.slots, timeout); if (!res.ok) break; }   // replay the stored fills
+      if (res.ok) res = await execute(page, action, task.slots, timeout);
       const ms = now() - ts;
       let nxt = await observeSettled(page);
 
-      const edge = (to: Screen, ok: boolean): ReportParams => ({
+      const edge = (to: Screen, ok: boolean, prefill: Fill[]): ReportParams => ({
         from: cur.screen.sig, fromUrl: cur.screen.urlTemplate, fromTitle: cur.screen.title, fromLandmarks: cur.screen.landmarks,
         to: to.sig, toUrl: to.urlTemplate, toTitle: to.title, toLandmarks: to.landmarks,
         key, kind: action!.kind, role: action!.role, name: action!.name, nth: action!.nth, label, slot: action!.slot ?? "",
-        ok: ok ? 1 : 0, fail: ok ? 0 : 1, ms, now: now() });
+        pre: prefill.length ? JSON.stringify(prefill) : "", ok: ok ? 1 : 0, fail: ok ? 0 : 1, ms, now: now() });
 
       let ok: boolean;
       if (source === "map") {
@@ -110,7 +128,7 @@ export async function runTask(o: RunOptions): Promise<RunResult> {
         ok = res.ok && nxt.screen.sig === expectedTo;
         // On failure the edge keeps its expected target (that screen is already in the graph); only its counts change.
         const target: Screen = ok ? nxt.screen : { ...nxt.screen, sig: expectedTo };
-        await report(g, edge(target, ok));
+        await report(g, edge(target, ok, pre));
         await recordStep(g, { run: runId, i, key, ok, ms, source, from: cur.screen, to: target, observed: nxt.screen.sig, now: now() });
         if (!ok) {
           failed.add(edgeId(cur.screen.sig, key));
@@ -120,15 +138,24 @@ export async function runTask(o: RunOptions): Promise<RunResult> {
             nxt = await observeSettled(page);
           }
         }
-      } else {
-        // An LLM action becomes an edge only if it worked: it must have moved the page, or filled a field.
-        ok = res.ok && (nxt.screen.sig !== cur.screen.sig || action.kind !== "click");
-        if (ok) await report(g, edge(nxt.screen, true));
+      } else if (action.kind === "click") {
+        // An LLM click becomes an edge only if it worked: it must have moved the page.
+        ok = res.ok && nxt.screen.sig !== cur.screen.sig;
+        if (ok) await report(g, edge(nxt.screen, true, fills));
+        else deadEnds.add(`${cur.screen.sig}|${key}`);
         await recordStep(g, { run: runId, i, key, ok, ms, source, from: cur.screen, to: ok ? nxt.screen : cur.screen, observed: nxt.screen.sig, now: now() });
         history.push(ok ? `${describe(action)} -> ${nxt.screen.title}` : `${describe(action)} did nothing${res.error ? ` (${res.error})` : ""}`);
+      } else {
+        // A fill is remembered for the click that leaves this screen; it is not an edge.
+        ok = res.ok;
+        if (ok) fills = [...fills.filter(f => !(f.role === action!.role && f.name === action!.name && f.nth === action!.nth)), action as Fill];
+        else deadEnds.add(`${cur.screen.sig}|${key}`);
+        await recordStep(g, { run: runId, i, key, ok, ms, source, from: cur.screen, to: cur.screen, observed: nxt.screen.sig, now: now() });
+        history.push(ok ? `Filled ${describe(action)} from the "${action.slot}" slot. Now submit it.` : `${describe(action)} could not be filled${res.error ? ` (${res.error})` : ""}`);
       }
       logs.push({ i, source, action: label, ok, ms, from: cur.screen.title, observed: nxt.screen.title, error: res.error });
       log(`${i}. [${source}] ${label} ${ok ? "ok" : "FAILED"} (${ms} ms) ${cur.screen.title} -> ${nxt.screen.title}`);
+      if (nxt.screen.sig !== cur.screen.sig || source === "map") fills = [];
       cur = nxt;
     }
 

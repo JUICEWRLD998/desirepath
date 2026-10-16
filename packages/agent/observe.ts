@@ -5,7 +5,8 @@ import type { Screen } from "../core/graph.ts";
 import { landmarksFromSnapshot, signature, urlTemplate } from "../core/signature.ts";
 
 export type Kind = "click" | "type" | "select";
-export interface Candidate { role: string; name: string; nth: number; kind: Kind }
+/** `value` is what a textbox or dropdown currently holds, so the agent can see that it has already filled it. */
+export interface Candidate { role: string; name: string; nth: number; kind: Kind; value?: string }
 export interface Observation { url: string; screen: Screen; candidates: Candidate[]; text: string }
 
 const ACT_ROLES = new Set(["button", "link", "textbox", "combobox", "checkbox", "tab"]);
@@ -30,7 +31,11 @@ export function candidatesFromSnapshot(snapshot: string): Candidate[] {
     const k = `${role}\u0000${name}`;
     const nth = seen.get(k) ?? 0;
     seen.set(k, nth + 1);
-    out.push({ role, name, nth, kind: kindOf(role) });
+    // Playwright prints a field's content after the name:  - textbox "Search products": Trail Mug
+    const value = !quoted && (role === "textbox" || role === "combobox")
+      ? /^(?: \[[^\]]+\])*:\s+(.+)$/.exec(line.slice(m[0].length))?.[1]
+      : undefined;
+    out.push(value ? { role, name, nth, kind: kindOf(role), value } : { role, name, nth, kind: kindOf(role) });
   }
   return out;
 }

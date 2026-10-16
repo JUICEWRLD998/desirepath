@@ -35,7 +35,7 @@ export function buildPrompt({ task, obs, history, known, explore }: ProposeInput
     `Page text (start): ${obs.text.replace(/\s+/g, " ").slice(0, 600)}`,
     "",
     "Actions available on this page:",
-    ...shown.map((c, i) => `${i + 1}. ${describe(c)}${c.nth > 0 ? ` (#${c.nth + 1} of that name)` : ""}`),
+    ...shown.map((c, i) => `${i + 1}. ${describe(c)}${c.nth > 0 ? ` (#${c.nth + 1} of that name)` : ""}${c.value ? ` (already contains "${c.value}")` : ""}`),
   ];
   if (history.length) lines.push("", "Your steps so far:", ...history.slice(-6).map(h => `- ${h}`));
   if (explore && known.length) {
@@ -43,7 +43,7 @@ export function buildPrompt({ task, obs, history, known, explore }: ProposeInput
       ...known.map(k => `- ${k.role} "${k.name}" (#${k.nth + 1})`),
       "Prefer an action that is NOT on that list, so the map learns a second route. Repeat a listed action only when nothing else can make progress.");
   }
-  lines.push("", 'Answer with the number of the action ("index"). For a textbox or dropdown also give the slot to type ("slot"), otherwise slot is null.');
+  lines.push("", 'Answer with the number of the action ("index"). For a textbox or dropdown also give the NAME of the slot to fill it from ("slot", for example "product", not its value); for anything else slot is null. A field that already contains its value is done: click the control that submits it.');
   return lines.join("\n");
 }
 
@@ -52,9 +52,12 @@ export function openRouterProposer(env: NodeJS.ProcessEnv = process.env): Propos
   if (!key || !model) throw new Error("OPENROUTER_API_KEY / OPENROUTER_MODEL missing (see .env.example)");
   const openrouter = createOpenRouter({ apiKey: key });
   return async input => {
+    // The slot can only be one of the task's slot names, so the model cannot hand back a typed value in its place.
+    const names = Object.keys(input.task.slots);
+    const slot = names.length ? z.enum(names as [string, ...string[]]).nullable() : z.null();
     const r = await generateText({
       model: openrouter(model),
-      output: Output.object({ schema: z.object({ index: z.number().int(), slot: z.string().nullable() }) }),
+      output: Output.object({ schema: z.object({ index: z.number().int(), slot }) }),
       temperature: 0,
       prompt: buildPrompt(input),
     });
