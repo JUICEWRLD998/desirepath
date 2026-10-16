@@ -3,8 +3,9 @@
 //   report    record one walked step                       explain   the runs behind an edge
 //   map_stats numbers for one site
 // Reads see the tenant overlay and the public map; writes go only where the caller says (tenant graph if `tenant`, else public).
-import { connect, ensureRun, ensureSchema, explain, goalCandidates, graphName, plan, recordStep, report, stats,
+import { connect, ensureRun, ensureSchema, explain, goalCandidates, graphName, ownedEdges, plan, recordStep, report, stats,
   type Graph, type Screen, type Step } from "../core/graph.ts";
+import { edgeId } from "../core/route.ts";
 import { actionKey, landmarksFromSnapshot, signature, urlTemplate } from "../core/signature.ts";
 
 type Db = Awaited<ReturnType<typeof connect>>;
@@ -43,27 +44,37 @@ export async function observe(db: Db, a: { site: string; url: string; landmarks?
 }
 
 export interface RouteOut {
-  source: "tenant" | "public"; goal: string; goal_sig: string; hops: number; p_success: number; est_ms: number;
+  source: "tenant" | "public"; goal: string; goal_sig: string; walked_for_this_goal: boolean; hops: number; p_success: number; est_ms: number;
   steps: Array<Pick<Step, "key" | "kind" | "role" | "name" | "nth" | "slot" | "pre" | "to" | "ok" | "fail" | "ms">>;
 }
 
 export async function planRoute(db: Db, a: { site: string; task: string; current_sig: string; tenant?: string; max_ms?: number }) {
-  const routes: Array<RouteOut & { weight: number }> = [];
-  const nearest: Array<{ source: string; goal: string; times: number }> = [];
-  for (const { source, g } of await readable(db, a.site, a.tenant)) {
-    const cands = await goalCandidates(g, a.task);
-    nearest.push(...cands.map(c => ({ source, goal: c.goalText, times: c.times })));
-    for (const c of cands.slice(0, 2)) {
-      for (const r of await plan(g, a.current_sig, c.goalSig, a.max_ms)) {
-        routes.push({ source, goal: c.goalText, goal_sig: c.goalSig, hops: r.hops, p_success: +r.pSuccess.toFixed(4), est_ms: Math.round(r.ms), steps: r.steps, weight: r.weight });
-      }
+  // Candidate goals from every readable graph, best text match first. Routes to a worse-matching goal never outrank routes to a better one.
+  const sources = await readable(db, a.site, a.tenant);
+  const cands: Array<{ source: "tenant" | "public"; g: Graph; goalSig: string; goalText: string; score: number; times: number }> = [];
+  for (const { source, g } of sources) for (const c of await goalCandidates(g, a.task)) cands.push({ source, g, goalSig: c.goalSig, goalText: c.goalText, score: c.score, times: c.times });
+  cands.sort((x, y) => y.score - x.score || y.times - x.times);
+  const goals = [...new Set(cands.map(c => c.goalText))].slice(0, 2);
+  const routes: Array<RouteOut & { weight: number; rank: number }> = [];
+  const ownedBy = new Map<string, Set<string>>();
+  for (const c of cands.filter(c => goals.includes(c.goalText))) {
+    const ownKey = `${c.source}|${c.goalText}`;
+    if (!ownedBy.has(ownKey)) ownedBy.set(ownKey, await ownedEdges(c.g, c.goalText));
+    const owned = ownedBy.get(ownKey)!;
+    for (const r of await plan(c.g, a.current_sig, c.goalSig, a.max_ms)) {
+      let from = a.current_sig;
+      const mine = r.steps.every(st => { const id = edgeId(from, st.key); from = st.to; return owned.has(id); });
+      routes.push({ walked_for_this_goal: mine,  source: c.source, goal: c.goalText, goal_sig: c.goalSig, hops: r.hops, p_success: +r.pSuccess.toFixed(4), est_ms: Math.round(r.ms), steps: r.steps, weight: r.weight, rank: goals.indexOf(c.goalText) });
     }
   }
-  routes.sort((x, y) => x.weight - y.weight);   // tenant first, then public: whichever has the lower weight wins (plan §6.4)
+  // Within a goal: routes the goal's own runs walked come first (template screens are shared by every item of their kind),
+  // then tenant and public compete on weight, the lower wins (plan §6.4).
+  routes.sort((x, y) => x.rank - y.rank || Number(y.walked_for_this_goal) - Number(x.walked_for_this_goal) || x.weight - y.weight);
   return {
     source: routes[0]?.source ?? null,
-    routes: routes.slice(0, 3).map(({ weight: _w, ...r }) => r),
-    ...(routes.length ? {} : { reason: nearest.length ? "no known route from the current screen to a matching goal" : "no known goal matches this task", nearest_goals: nearest.slice(0, 5) }),
+    routes: routes.slice(0, 3).map(({ weight: _w, rank: _r, ...r }) => r),
+    ...(routes.length ? {} : { reason: cands.length ? "no known route from the current screen to a matching goal" : "no known goal matches this task",
+      nearest_goals: cands.slice(0, 5).map(c => ({ source: c.source, goal: c.goalText, times: c.times })) }),
   };
 }
 

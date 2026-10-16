@@ -15,7 +15,9 @@
     "typecheck": "tsc --noEmit",
     "p2": "tsx scripts/p2_demo.ts",
     "p3": "tsx scripts/p3_runs.ts",
-    "mcp": "tsx packages/mcp/server.ts"
+    "mcp": "tsx packages/mcp/server.ts",
+    "pave": "tsx scripts/pave_mind2web.ts",
+    "mcp:demo": "tsx scripts/mcp_demo.ts"
   },
   "devDependencies": {
     "@types/node": "^26.6.5",

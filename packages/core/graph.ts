@@ -20,6 +20,12 @@ export function graphName(site: string, tenant?: string): string {
   return tenant ? `tenant:${tenant}:${site}` : `public:${site}`;
 }
 
+/** Read-only human-paved layer from Mind2Web (plan §5). */
+export function m2wGraphName(site: string): string {
+  if (/[^A-Za-z0-9._-]/.test(site)) throw new Error("site may only contain letters, digits, . _ -");
+  return `m2w:${site}`;
+}
+
 export function connect(env: NodeJS.ProcessEnv = process.env): Promise<Db> {
   const { FALKORDB_URL, FALKORDB_HOST, FALKORDB_PORT, FALKORDB_USERNAME, FALKORDB_PASSWORD, FALKORDB_TLS } = env;
   if (FALKORDB_HOST) {
@@ -79,10 +85,27 @@ export function ftQuery(text: string): string {
   return [...new Set(tokens)].join("|");
 }
 
+/** Distinct content words of a text (stop words dropped, snake_case split), for comparing a task with goal texts. */
+export function goalWords(text: string): Set<string> {
+  return new Set(ftQuery(text).split("|").flatMap(t => t.split("_")).filter(Boolean));
+}
+/** Jaccard overlap of two texts' content words: 1 for the same words, 0 for none in common. */
+export function overlap(a: string, b: string): number {
+  const x = goalWords(a), y = goalWords(b);
+  const both = [...x].filter(w => y.has(w)).length;
+  return x.size + y.size - both === 0 ? 0 : both / (x.size + y.size - both);
+}
+
+/**
+ * Goals whose text resembles the task. The full-text index finds candidates (it is fast); its own score is a poor ranking
+ * (it put "Open page 2 of the Mystery category" above the exact text of another goal), so candidates are re-ranked by word
+ * overlap with the task, then by how often the goal was reached. `score` is that overlap.
+ */
 export async function goalCandidates(g: G, text: string) {
   const q = ftQuery(text);
   if (!q) return [];
-  return (await g.query(SQL.goals, { params: { text: q } })).data as Array<{ goalSig: string; goalText: string; score: number; times: number }>;
+  const rows = (await g.query(SQL.goals, { params: { text: q } })).data as Array<{ goalSig: string; goalText: string; score: number; times: number }>;
+  return rows.map(r => ({ ...r, score: overlap(text, r.goalText) })).sort((a, b) => b.score - a.score || b.times - a.times).slice(0, 5);
 }
 
 /** The goal screen of a scripted task, by exact goal id; undefined if no run has reached it yet. */

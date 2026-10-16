@@ -1,0 +1,5 @@
+{
+  "mcpServers": {
+    "desirepath": { "command": "npx", "args": ["tsx", "packages/mcp/server.ts"] }
+  }
+}

@@ -8,6 +8,7 @@ Source of truth for the map. Code: `packages/core/graph.ts`; queries: `packages/
 |---|---|---|
 | `public:<site>` | every agent | shared map of one site |
 | `tenant:<tenant>:<site>` | that tenant's agents | private overlay; never copied into `public:*` |
+| `m2w:<site>` | `scripts/pave_mind2web.ts` | read-only human-paved layer from Mind2Web (CC-BY-4.0): a state is a position in a task (the actions taken so far), an edge is the next action, `ok` is how many human tasks walked it |
 
 `graphName()` rejects anything outside `[A-Za-z0-9._-]`, so a site or tenant name cannot spell its way into another namespace.
 Tenants are separate FalkorDB graphs, not filtered rows (test: *tenant graphs never leak into public*).
@@ -45,6 +46,7 @@ Timestamps are epoch milliseconds.
 `plan.cypher` calls `algo.SPpaths` on `risk` (cost `ms`, `pathCount: 3`) and returns each route's steps with the expected next `sig` and the hop count.
 `pSuccess = exp(-(pathWeight - 0.05*hops))`.
 The agent follows the first route (lowest risk first) whose **per-hop** success `pSuccess^(1/hops)` is at least 0.6 and that contains no edge which already failed *in this run* (`chooseRoute`, `packages/core/route.ts`). Per-hop, because a 3-hop route walked once scores 0.30 as a whole; one clean walk of every edge is 0.667 per hop. If no route qualifies the agent asks the LLM for one action.
+Because a template screen is shared by every item of its kind (all category pages are one screen), the cheapest route can belong to another task; among eligible routes the agent first takes one whose every step *this task* has walked successfully before (`owned_edges.cypher`). When the agent stands on the goal screen but the predicate is not met yet (page 3 shares a screen with page 2), it repeats the most-walked self-loop edge from there.
 
 ## Queries (`packages/core/queries/`)
 
@@ -53,6 +55,9 @@ The agent follows the first route (lowest risk first) whose **per-hop** success 
 | `report.cypher` | `report()` | upsert both states and the edge; new counts, running-mean `ms`, `risk` |
 | `plan.cypher` | `plan()` | up to 3 routes by `algo.SPpaths`, each step with its expected next `sig` |
 | `goals.cypher` | `goalCandidates()` | full-text match of a task to known goals, then the screens that reached them |
+| `goal_by_id.cypher` | `goalSigById()` | the goal screen of a scripted task by exact goal id (free text is the fallback) |
+| `owned_edges.cypher` | `ownedEdges()` | edges that successful runs of exactly this task walked; the planner prefers routes made only of them |
+| `run_ensure.cypher` | `ensureRun()` | open a run for a client that only calls `report` over MCP |
 | `outgoing.cypher` | `outgoing()` | what the map already knows from one screen (hints for exploring) |
 | `run_start.cypher`, `run_end.cypher` | `startRun()`, `endRun()` | open and close a `Run` |
 | `step.cypher` | `recordStep()` | a `Step` linked to its run and its two states |

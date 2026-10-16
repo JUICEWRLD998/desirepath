@@ -8,7 +8,7 @@ follows it without calling the LLM, and when a site changes, the failed edge re-
 Full plan: [`implementation.md`](implementation.md). Decisions and measured results: [`DECISIONS.md`](DECISIONS.md).
 Graph model: [`docs/GRAPH_MODEL.md`](docs/GRAPH_MODEL.md).
 
-**Status:** Phase 0 (spikes; only Open Library is unmeasured, its host times out from the author's machine), Phase 1 (core) and Phase 2 (thin path on the test shop) are done and tested on FalkorDB Cloud. Not built yet: real-site tasks, MCP server, dashboard. Single user so far.
+**Status:** Phases 0 to 4 are done and tested on FalkorDB Cloud (Open Library is the one unmeasured site: its host times out from the author's machine). Real-site maps for books.toscrape.com, quotes.toscrape.com and Wikipedia; an MCP server; three agents writing one graph at once; tenant overlays; the Mind2Web human-paved layer. Not built yet: the dashboard (Phase 5), the measured claims (Phase 6), deployment (Phase 7). Single user so far.
 
 ## What works today
 
@@ -56,14 +56,14 @@ python3 -m venv --without-pip v && curl -sSL https://bootstrap.pypa.io/get-pip.p
   --loadmodule ./v/lib/python3.12/site-packages/redislite/bin/falkordb.so
 ```
 
-Then point the tools at it for one command: `FALKORDB_URL=redis://127.0.0.1:6390 npm test`. A value in the shell wins
+Then point the tools at it for one command: `FALKORDB_HOST= FALKORDB_URL=redis://127.0.0.1:6390 npm test` (the empty `FALKORDB_HOST` stops a host in `.env` from taking priority). A value in the shell wins
 over `.env`.
 
 ## Commands
 
 ```bash
-npm test                  # 50 tests; the 17 that need a database are skipped unless FALKORDB_URL or FALKORDB_HOST is set (`.env` is loaded)
-FALKORDB_URL=redis://127.0.0.1:6390 npm test      # all 50 (needs Chromium; files run one at a time on purpose)
+npm test                  # 70 tests (needs FalkorDB via `.env` and Chromium; the database tests skip when none is configured)
+FALKORDB_HOST= FALKORDB_URL=redis://127.0.0.1:6390 npm test      # against a local FalkorDB instead (files run one at a time on purpose)
 npm run typecheck         # tsc --noEmit
 
 npm run p2                # Phase 2 with the real model: cold run, map run, explore, redesign, detour. Resets public:testshop-p2
@@ -71,19 +71,37 @@ npm run shop              # the test shop on http://127.0.0.1:4100  (flip the re
 npm run agent -- --task testshop-add-and-checkout --mode cold        # one run against the shared map
 npm run agent -- --task testshop-add-and-checkout --mode map         # flags: --explore --headed --base --site --tenant --max-steps
 
+npm run p3                # Phase 3: cold and map runs on books.toscrape.com, quotes.toscrape.com, Wikipedia (polite: robots.txt, 1 action/s)
+npm run agent -- --task testshop-add-and-checkout --mode cold --agents 3   # three agents at once, one graph
+python scripts/measure_reuse.py [--export data/m2w.json]   # Mind2Web reuse measurement + controls (needs duckdb)
+npm run pave              # load data/m2w.json into read-only graphs m2w:<site>
+
 npm run p0:net            # which demo hosts this machine can reach
 npm run p0:falkor         # FalkorDB: SPpaths, log(), full-text, PageRank, WCC, two graphs  (writes spikes/out/falkor.json)
 npm run p0:llm            # one structured-output call through OpenRouter
 npm run p0:sites          # signature stability on the live demo sites (ONLY=openlibrary GOTO_TIMEOUT=90000 to narrow)
 ```
 
+## Use the map from any MCP client
+
+Five tools: `observe` (page to screen signature, is it in the map), `plan` (routes to a goal described in words), `report` (record a step you walked), `explain` (the runs behind an edge), `map_stats`.
+
+```bash
+claude mcp add desirepath -- npx tsx packages/mcp/server.ts        # stdio; the repo also ships a project-scoped .mcp.json
+npm run mcp -- --http 8787                                          # Streamable HTTP at /mcp, GET /health
+npm run mcp:demo                                                    # a standard MCP client asks for a route on books.toscrape.com
+```
+
+HTTP safety: set `MCP_WRITE_TOKEN` and `report` needs `Authorization: Bearer <token>`; `MCP_WRITABLE_SITES=a.com,b.com` limits writes; new maps are created only with `MCP_ALLOW_NEW_SITES=1`. Reads never create a graph. Pass `tenant` to read and write a private overlay (`tenant:<id>:<site>`); tenant data is never copied into the public map.
+
 ## Layout
 
 ```
 packages/core/    signature.ts, risk.ts, route.ts, graph.ts (FalkorDB client), queries/*.cypher, tests/
-packages/agent/   observe.ts, execute.ts, llm.ts, loop.ts, runner.ts (CLI), tasks/*.json, tests/
+packages/agent/   observe.ts, execute.ts, llm.ts, loop.ts, concurrent.ts, robots.ts, browser.ts, runner.ts (CLI), tasks/*.json, tests/
+packages/mcp/     tools.ts, server.ts (stdio + HTTP), tests/
 apps/testshop/    our own shop with the redesign switch
-scripts/          p2_demo.ts
-docs/             GRAPH_MODEL.md, receipts/
+scripts/          p2_demo.ts, p3_runs.ts, measure_reuse.py, pave_mind2web.ts, mcp_demo.ts
+docs/             GRAPH_MODEL.md, SITES.md, receipts/
 spikes/           Phase 0 scripts and their raw output (spikes/out/)
 ```

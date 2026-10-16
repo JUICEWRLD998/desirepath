@@ -18,7 +18,8 @@
         2
       ],
       "mapSteps": [
-        4
+        2,
+        2
       ],
       "mapFewerThanColdMean": false
     },
@@ -28,8 +29,8 @@
         3
       ],
       "mapSteps": [
-        6,
-        6
+        3,
+        3
       ],
       "mapFewerThanColdMean": false
     },
@@ -100,7 +101,7 @@
       "failedMapSteps": 0,
       "llmCalls": 2,
       "tokens": 3423,
-      "seconds": 13.9
+      "seconds": 16.8
     },
     {
       "task": "books-page2",
@@ -112,7 +113,7 @@
       "failedMapSteps": 0,
       "llmCalls": 2,
       "tokens": 3423,
-      "seconds": 14.8
+      "seconds": 12.3
     },
     {
       "task": "books-page2",
@@ -124,7 +125,7 @@
       "failedMapSteps": 0,
       "llmCalls": 0,
       "tokens": 0,
-      "seconds": 11.3
+      "seconds": 13.9
     },
     {
       "task": "books-page2",
@@ -136,7 +137,7 @@
       "failedMapSteps": 0,
       "llmCalls": 0,
       "tokens": 0,
-      "seconds": 10.3
+      "seconds": 11.8
     },
     {
       "task": "books-open-book",
@@ -148,7 +149,7 @@
       "failedMapSteps": 0,
       "llmCalls": 2,
       "tokens": 3037,
-      "seconds": 17.7
+      "seconds": 19.5
     },
     {
       "task": "books-open-book",
@@ -160,26 +161,31 @@
       "failedMapSteps": 0,
       "llmCalls": 2,
       "tokens": 3037,
-      "seconds": 15.1
+      "seconds": 11.5
     },
     {
       "task": "books-open-book",
       "mode": "map",
       "n": 1,
       "outcome": "success",
-      "steps": 4,
+      "steps": 2,
       "mapSteps": 2,
-      "failedMapSteps": 1,
-      "llmCalls": 2,
-      "tokens": 3090,
-      "seconds": 31.4
+      "failedMapSteps": 0,
+      "llmCalls": 0,
+      "tokens": 0,
+      "seconds": 11
     },
     {
       "task": "books-open-book",
       "mode": "map",
       "n": 2,
-      "outcome": "error",
-      "error": "Cannot convert undefined or null to object"
+      "outcome": "success",
+      "steps": 2,
+      "mapSteps": 2,
+      "failedMapSteps": 0,
+      "llmCalls": 0,
+      "tokens": 0,
+      "seconds": 13.7
     },
     {
       "task": "books-default-page3",
@@ -191,7 +197,7 @@
       "failedMapSteps": 0,
       "llmCalls": 3,
       "tokens": 5229,
-      "seconds": 18.9
+      "seconds": 14.7
     },
     {
       "task": "books-default-page3",
@@ -203,31 +209,31 @@
       "failedMapSteps": 0,
       "llmCalls": 3,
       "tokens": 5229,
-      "seconds": 16.1
+      "seconds": 16.2
     },
     {
       "task": "books-default-page3",
       "mode": "map",
       "n": 1,
       "outcome": "success",
-      "steps": 6,
-      "mapSteps": 4,
-      "failedMapSteps": 1,
-      "llmCalls": 2,
-      "tokens": 3136,
-      "seconds": 37.4
+      "steps": 3,
+      "mapSteps": 3,
+      "failedMapSteps": 0,
+      "llmCalls": 0,
+      "tokens": 0,
+      "seconds": 12.4
     },
     {
       "task": "books-default-page3",
       "mode": "map",
       "n": 2,
       "outcome": "success",
-      "steps": 6,
-      "mapSteps": 4,
-      "failedMapSteps": 1,
-      "llmCalls": 2,
-      "tokens": 3136,
-      "seconds": 31.1
+      "steps": 3,
+      "mapSteps": 3,
+      "failedMapSteps": 0,
+      "llmCalls": 0,
+      "tokens": 0,
+      "seconds": 29.9
     },
     {
       "task": "quotes-tag-author",
@@ -239,7 +245,7 @@
       "failedMapSteps": 0,
       "llmCalls": 1,
       "tokens": 908,
-      "seconds": 9.1
+      "seconds": 9.2
     },
     {
       "task": "quotes-tag-author",
@@ -251,7 +257,7 @@
       "failedMapSteps": 0,
       "llmCalls": 1,
       "tokens": 908,
-      "seconds": 7.9
+      "seconds": 12.9
     },
     {
       "task": "quotes-tag-author",
@@ -263,7 +269,7 @@
       "failedMapSteps": 0,
       "llmCalls": 0,
       "tokens": 0,
-      "seconds": 8
+      "seconds": 10.2
     },
     {
       "task": "quotes-tag-author",
@@ -275,7 +281,7 @@
       "failedMapSteps": 0,
       "llmCalls": 0,
       "tokens": 0,
-      "seconds": 7
+      "seconds": 8.7
     },
     {
       "task": "quotes-tag-page2",
@@ -287,7 +293,7 @@
       "failedMapSteps": 0,
       "llmCalls": 1,
       "tokens": 907,
-      "seconds": 6.7
+      "seconds": 8.6
     },
     {
       "task": "quotes-tag-page2",
@@ -299,7 +305,7 @@
       "failedMapSteps": 0,
       "llmCalls": 1,
       "tokens": 907,
-      "seconds": 6.6
+      "seconds": 12.2
     },
     {
       "task": "quotes-tag-page2",
@@ -311,7 +317,7 @@
       "failedMapSteps": 0,
       "llmCalls": 0,
       "tokens": 0,
-      "seconds": 6
+      "seconds": 8.8
     },
     {
       "task": "quotes-tag-page2",
@@ -323,7 +329,7 @@
       "failedMapSteps": 0,
       "llmCalls": 0,
       "tokens": 0,
-      "seconds": 5.8
+      "seconds": 7.1
     },
     {
       "task": "quotes-page3",
@@ -334,8 +340,8 @@
       "mapSteps": 0,
       "failedMapSteps": 0,
       "llmCalls": 2,
-      "tokens": 1944,
-      "seconds": 13.5
+      "tokens": 1948,
+      "seconds": 12.5
     },
     {
       "task": "quotes-page3",
@@ -347,7 +353,7 @@
       "failedMapSteps": 0,
       "llmCalls": 2,
       "tokens": 1946,
-      "seconds": 10.5
+      "seconds": 10.1
     },
     {
       "task": "quotes-page3",
@@ -356,118 +362,118 @@
       "outcome": "success",
       "steps": 2,
       "mapSteps": 2,
+      "failedMapSteps": 0,
+      "llmCalls": 0,
+      "tokens": 0,
+      "seconds": 9.2
+    },
+    {
+      "task": "quotes-page3",
+      "mode": "map",
+      "n": 2,
+      "outcome": "success",
+      "steps": 2,
+      "mapSteps": 2,
+      "failedMapSteps": 0,
+      "llmCalls": 0,
+      "tokens": 0,
+      "seconds": 9
+    },
+    {
+      "task": "wikipedia-desire-path-erosion",
+      "mode": "cold",
+      "n": 1,
+      "outcome": "success",
+      "steps": 1,
+      "mapSteps": 0,
+      "failedMapSteps": 0,
+      "llmCalls": 1,
+      "tokens": 2158,
+      "seconds": 7.7
+    },
+    {
+      "task": "wikipedia-desire-path-erosion",
+      "mode": "cold",
+      "n": 2,
+      "outcome": "success",
+      "steps": 1,
+      "mapSteps": 0,
+      "failedMapSteps": 0,
+      "llmCalls": 1,
+      "tokens": 2158,
+      "seconds": 7.3
+    },
+    {
+      "task": "wikipedia-desire-path-erosion",
+      "mode": "map",
+      "n": 1,
+      "outcome": "success",
+      "steps": 1,
+      "mapSteps": 1,
+      "failedMapSteps": 0,
+      "llmCalls": 0,
+      "tokens": 0,
+      "seconds": 9.4
+    },
+    {
+      "task": "wikipedia-desire-path-erosion",
+      "mode": "map",
+      "n": 2,
+      "outcome": "success",
+      "steps": 1,
+      "mapSteps": 1,
+      "failedMapSteps": 0,
+      "llmCalls": 0,
+      "tokens": 0,
+      "seconds": 7.7
+    },
+    {
+      "task": "wikipedia-desire-path-yosemite",
+      "mode": "cold",
+      "n": 1,
+      "outcome": "success",
+      "steps": 1,
+      "mapSteps": 0,
+      "failedMapSteps": 0,
+      "llmCalls": 1,
+      "tokens": 2167,
+      "seconds": 11.6
+    },
+    {
+      "task": "wikipedia-desire-path-yosemite",
+      "mode": "cold",
+      "n": 2,
+      "outcome": "success",
+      "steps": 1,
+      "mapSteps": 0,
+      "failedMapSteps": 0,
+      "llmCalls": 1,
+      "tokens": 2167,
+      "seconds": 15.3
+    },
+    {
+      "task": "wikipedia-desire-path-yosemite",
+      "mode": "map",
+      "n": 1,
+      "outcome": "success",
+      "steps": 1,
+      "mapSteps": 1,
+      "failedMapSteps": 0,
+      "llmCalls": 0,
+      "tokens": 0,
+      "seconds": 16
+    },
+    {
+      "task": "wikipedia-desire-path-yosemite",
+      "mode": "map",
+      "n": 2,
+      "outcome": "success",
+      "steps": 1,
+      "mapSteps": 1,
       "failedMapSteps": 0,
       "llmCalls": 0,
       "tokens": 0,
       "seconds": 11.2
-    },
-    {
-      "task": "quotes-page3",
-      "mode": "map",
-      "n": 2,
-      "outcome": "success",
-      "steps": 2,
-      "mapSteps": 2,
-      "failedMapSteps": 0,
-      "llmCalls": 0,
-      "tokens": 0,
-      "seconds": 9.1
-    },
-    {
-      "task": "wikipedia-desire-path-erosion",
-      "mode": "cold",
-      "n": 1,
-      "outcome": "success",
-      "steps": 1,
-      "mapSteps": 0,
-      "failedMapSteps": 0,
-      "llmCalls": 1,
-      "tokens": 2158,
-      "seconds": 7.5
-    },
-    {
-      "task": "wikipedia-desire-path-erosion",
-      "mode": "cold",
-      "n": 2,
-      "outcome": "success",
-      "steps": 1,
-      "mapSteps": 0,
-      "failedMapSteps": 0,
-      "llmCalls": 1,
-      "tokens": 2158,
-      "seconds": 6.5
-    },
-    {
-      "task": "wikipedia-desire-path-erosion",
-      "mode": "map",
-      "n": 1,
-      "outcome": "success",
-      "steps": 1,
-      "mapSteps": 1,
-      "failedMapSteps": 0,
-      "llmCalls": 0,
-      "tokens": 0,
-      "seconds": 6.3
-    },
-    {
-      "task": "wikipedia-desire-path-erosion",
-      "mode": "map",
-      "n": 2,
-      "outcome": "success",
-      "steps": 1,
-      "mapSteps": 1,
-      "failedMapSteps": 0,
-      "llmCalls": 0,
-      "tokens": 0,
-      "seconds": 6.5
-    },
-    {
-      "task": "wikipedia-desire-path-yosemite",
-      "mode": "cold",
-      "n": 1,
-      "outcome": "success",
-      "steps": 1,
-      "mapSteps": 0,
-      "failedMapSteps": 0,
-      "llmCalls": 1,
-      "tokens": 2167,
-      "seconds": 9.4
-    },
-    {
-      "task": "wikipedia-desire-path-yosemite",
-      "mode": "cold",
-      "n": 2,
-      "outcome": "success",
-      "steps": 1,
-      "mapSteps": 0,
-      "failedMapSteps": 0,
-      "llmCalls": 1,
-      "tokens": 2167,
-      "seconds": 18.2
-    },
-    {
-      "task": "wikipedia-desire-path-yosemite",
-      "mode": "map",
-      "n": 1,
-      "outcome": "success",
-      "steps": 1,
-      "mapSteps": 1,
-      "failedMapSteps": 1,
-      "llmCalls": 0,
-      "tokens": 0,
-      "seconds": 20.2
-    },
-    {
-      "task": "wikipedia-desire-path-yosemite",
-      "mode": "map",
-      "n": 2,
-      "outcome": "success",
-      "steps": 1,
-      "mapSteps": 0,
-      "failedMapSteps": 0,
-      "llmCalls": 1,
-      "tokens": 2167,
-      "seconds": 9.7
     }
   ]
 }

@@ -57,3 +57,13 @@ test("a route this task has walked before beats a cheaper route that belongs to 
   assert.equal(chooseRoute([other, mine], "HOME", new Set(), 0.6, new Set([edgeId("HOME", "travel"), edgeId("SHELF", "book"), edgeId("DONE", "x")])), mine);
   assert.equal(chooseRoute([other, mine], "HOME", new Set(), 0.6, new Set()), other, "nothing owned: fall back to the cheapest");
 });
+
+test("goal text overlap ranks the exact text first, ignores stop words and snake_case", async () => {
+  const { overlap } = await import("../graph.ts");
+  const task = "Open the book Under the Tuscan Sun from the Travel category";
+  assert.equal(overlap(task, task), 1);
+  assert.ok(overlap(task, task) > overlap(task, "Open page 2 of the Mystery category"));
+  assert.equal(overlap("From the article, open Yosemite_National_Park", "from article open yosemite national park"), 1);
+  assert.equal(overlap("alpha beta", "gamma delta"), 0);
+  assert.equal(overlap("", ""), 0);
+});
