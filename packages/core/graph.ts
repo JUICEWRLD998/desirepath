@@ -7,7 +7,10 @@ type Db = Awaited<ReturnType<typeof FalkorDB.connect>>;
 type G = ReturnType<Db["selectGraph"]>;
 
 const query = (name: string) => readFileSync(new URL(`./queries/${name}.cypher`, import.meta.url), "utf8");
-const SQL = { report: query("report"), plan: query("plan"), goals: query("goals"), stats: query("stats") };
+const SQL = {
+  report: query("report"), plan: query("plan"), goals: query("goals"), stats: query("stats"),
+  runStart: query("run_start"), runEnd: query("run_end"), step: query("step"), goal: query("goal"), outgoing: query("outgoing"),
+};
 
 export function graphName(site: string, tenant?: string): string {
   const bad = /[^A-Za-z0-9._-]/;
@@ -27,7 +30,7 @@ export function connect(env: NodeJS.ProcessEnv = process.env): Promise<Db> {
 
 /** Indexes from plan §5. Safe to call repeatedly. */
 export async function ensureSchema(g: G): Promise<void> {
-  const stmts = ["CREATE INDEX FOR (s:State) ON (s.sig)", "CREATE INDEX FOR (g:Goal) ON (g.id)",
+  const stmts = ["CREATE INDEX FOR (s:State) ON (s.sig)", "CREATE INDEX FOR (g:Goal) ON (g.id)", "CREATE INDEX FOR (r:Run) ON (r.id)",
     "CALL db.idx.fulltext.createNodeIndex('Goal','text')"];
   for (const s of stmts) {
     try { await g.query(s); } catch (e) { if (!/already|exist/i.test((e as Error).message)) throw e; }
@@ -38,17 +41,19 @@ export interface ReportParams {
   from: string; fromUrl: string; fromTitle: string; fromLandmarks: string[];
   to: string; toUrl: string; toTitle: string; toLandmarks: string[];
   key: string; kind: string; role: string; name: string; nth: number; label: string;
+  /** Task slot a typed value comes from ("" if none). The value itself is never stored. */
+  slot?: string;
   ok: 0 | 1; fail: 0 | 1; ms: number; now: number;
 }
 export interface EdgeStats { ok: number; fail: number; ms: number; risk: number }
 
 export async function report(g: G, p: ReportParams): Promise<EdgeStats> {
   if (p.ok + p.fail !== 1) throw new Error("report: exactly one of ok/fail must be 1");
-  const r = (await g.query(SQL.report, { params: p as never })).data![0] as Record<string, number>;
+  const r = (await g.query(SQL.report, { params: { ...p, slot: p.slot ?? "" } as never })).data![0] as Record<string, number>;
   return { ok: r["e.ok"], fail: r["e.fail"], ms: r["e.ms"], risk: r["e.risk"] };
 }
 
-export interface Step { key: string; to: string; kind: string; role: string; name: string; nth: number; ok: number; fail: number; ms: number }
+export interface Step { key: string; to: string; kind: string; role: string; name: string; nth: number; slot?: string; ok: number; fail: number; ms: number }
 export interface Route { steps: Step[]; hops: number; weight: number; ms: number; pSuccess: number }
 
 /** Up to three routes, lowest risk first. Empty if either screen is unknown or no route exists. */
@@ -75,3 +80,42 @@ export async function goalCandidates(g: G, text: string) {
 }
 
 export async function stats(g: G) { return (await g.query(SQL.stats)).data; }
+
+/** A screen as the recorder needs it. `url` is the raw URL; the graph stores its template. */
+export interface Screen { sig: string; urlTemplate: string; title: string; landmarks: string[] }
+const side = (prefix: "from" | "to", s: Screen) =>
+  ({ [prefix]: s.sig, [`${prefix}Url`]: s.urlTemplate, [`${prefix}Title`]: s.title, [`${prefix}Landmarks`]: s.landmarks });
+
+export interface RunStart { id: string; agent: string; tenant?: string; task: string; mode: "cold" | "map"; now: number }
+export async function startRun(g: G, r: RunStart): Promise<void> {
+  await g.query(SQL.runStart, { params: { ...r, tenant: r.tenant ?? "" } as never });
+}
+
+export interface RunEnd { id: string; now: number; outcome: "success" | "failure"; steps: number; llm: number; tokens: number; ms: number }
+export async function endRun(g: G, r: RunEnd): Promise<void> {
+  await g.query(SQL.runEnd, { params: r as never });
+}
+
+export interface StepRecord {
+  run: string; i: number; key: string; ok: boolean; ms: number; source: "map" | "llm";
+  from: Screen; to: Screen; observed: string; now: number;
+}
+/** `to` is the edge's target when the step walked an edge (the expected state for a failed map step), else the current screen. */
+export async function recordStep(g: G, s: StepRecord): Promise<void> {
+  await g.query(SQL.step, { params: { run: s.run, i: s.i, key: s.key, ok: s.ok ? 1 : 0, ms: s.ms, source: s.source,
+    observed: s.observed, now: s.now, ...side("from", s.from), ...side("to", s.to) } as never });
+}
+
+/** The screen `sig` satisfied the task `id`. Creates the Goal on first success. */
+export async function recordReach(g: G, p: { id: string; text: string; site: string; sig: string; now: number }): Promise<number> {
+  const r = (await g.query(SQL.goal, { params: p as never })).data![0] as Record<string, number>;
+  return Object.values(r)[0];
+}
+
+export interface Known { key: string; role: string; name: string; nth: number; ok: number; fail: number; to: string }
+/** Actions the map already knows from one screen (hints for the explorer). */
+export async function outgoing(g: G, sig: string): Promise<Known[]> {
+  return (await g.query(SQL.outgoing, { params: { sig } })).data as unknown as Known[];
+}
+
+export { chooseRoute } from "./route.ts";

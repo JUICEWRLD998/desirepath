@@ -1,5 +1,5 @@
 // P0: signature stability (plan §6.1). Loads each URL 3x using the core signature implementation.
-import { mkdirSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 mkdirSync("spikes/out", { recursive: true });
 import { chromium, type Page } from "playwright";
 import { landmarksFromSnapshot, signature, urlTemplate } from "../packages/core/signature.ts";
@@ -20,13 +20,15 @@ const SITES: Record<string, string[]> = {
 };
 const browser = await chromium.launch({ headless: true, executablePath: process.env.CHROMIUM_PATH });
 const out: Record<string, unknown> = {};
+const only = process.env.ONLY?.split(",");
 for (const [site, urls] of Object.entries(SITES)) {
+  if (only && !only.includes(site)) continue;
   const res: Record<string, string[]> = {};
   for (const u of urls) {
     res[u] = [];
     for (let i = 0; i < 3; i++) {
       const ctx = await browser.newContext(); const p = await ctx.newPage();
-      try { await p.goto(u, { waitUntil: "domcontentloaded", timeout: 30000 }); const o = await observe(p); res[u].push(o.sig); }
+      try { await p.goto(u, { waitUntil: "domcontentloaded", timeout: Number(process.env.GOTO_TIMEOUT || 30000) }); const o = await observe(p); res[u].push(o.sig); }
       catch (e) { res[u].push("ERR " + (e as Error).message.slice(0, 80)); }
       await ctx.close(); await new Promise(r => setTimeout(r, 1000)); // <= 1 req/s
     }
@@ -39,5 +41,7 @@ for (const [site, urls] of Object.entries(SITES)) {
   out[site] = { stable, productPagesMatch, categoryDiffers, urls: res };
   console.log(site, JSON.stringify(out[site], null, 1));
 }
-writeFileSync("spikes/out/signature.json", JSON.stringify(out, null, 2));
+const file = "spikes/out/signature.json";
+const prev = only && existsSync(file) ? JSON.parse(readFileSync(file, "utf8")) : {};
+writeFileSync(file, JSON.stringify({ ...prev, ...out }, null, 2));
 await browser.close();
