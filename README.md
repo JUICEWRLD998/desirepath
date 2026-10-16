@@ -8,9 +8,7 @@ follows it without calling the LLM, and when a site changes, the failed edge re-
 Full plan: [`implementation.md`](implementation.md). Decisions and measured results: [`DECISIONS.md`](DECISIONS.md).
 Graph model: [`docs/GRAPH_MODEL.md`](docs/GRAPH_MODEL.md).
 
-**Status:** Phase 0 (spikes) open on the FalkorDB Cloud connection, the size check and Open Library; Phase 1 (core) and
-Phase 2 (thin path on the test shop) done on a local FalkorDB. Not built yet: real-site tasks, MCP server, dashboard.
-Single user so far.
+**Status:** Phase 0 (spikes; only Open Library is unmeasured, its host times out from the author's machine), Phase 1 (core) and Phase 2 (thin path on the test shop) are done and tested on FalkorDB Cloud. Not built yet: real-site tasks, MCP server, dashboard. Single user so far.
 
 ## What works today
 
@@ -46,8 +44,7 @@ cp .env.example .env                # then fill in the keys, see below
 
 ### Local FalkorDB (what the tests and `npm run p2` ran against)
 
-FalkorDB Cloud has not accepted the credentials in `.env` yet (`WRONGPASS`, see DECISIONS), so everything so far ran on
-a local FalkorDB module from the `falkordblite` PyPI package. On Windows that means WSL (Ubuntu); this is what was run:
+Optional: everything also passes on FalkorDB Cloud; a local one avoids network latency. It is a FalkorDB module from the `falkordblite` PyPI package. On Windows that means WSL (Ubuntu); this is what was run:
 
 ```bash
 # once, inside WSL
