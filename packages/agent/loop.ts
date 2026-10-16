@@ -2,7 +2,7 @@
 // Cold mode is the honest baseline: same loop, planner off, map still recorded.
 import { randomUUID } from "node:crypto";
 import type { Page } from "playwright";
-import { endRun, goalCandidates, goalSigById, outgoing, plan, recordReach, recordStep, report, startRun,
+import { endRun, goalCandidates, goalSigById, outgoing, ownedEdges, plan, recordReach, recordStep, report, startRun,
   type Graph, type ReportParams, type Screen } from "../core/graph.ts";
 import { chooseRoute, edgeId } from "../core/route.ts";
 import { actionKey } from "../core/signature.ts";
@@ -90,6 +90,7 @@ export async function runTask(o: RunOptions): Promise<RunResult> {
     await page.goto(new URL(task.start, task.baseUrl).href, { waitUntil: "load", timeout: 30_000 });
     // A scripted task names its goal by id (plan §6.5); free text is only the fallback.
     const goalSig = o.mode === "map" ? (await goalSigById(g, task.id)) ?? (await goalCandidates(g, task.text))[0]?.goalSig : undefined;
+    const owned = o.mode === "map" ? await ownedEdges(g, task.text) : undefined;   // routes this exact task has walked before
     let cur = await observeSettled(page);
 
     for (let i = 1; ; i++) {
@@ -102,7 +103,7 @@ export async function runTask(o: RunOptions): Promise<RunResult> {
       let key = "";
       let pre: Fill[] = [];
       if (goalSig) {
-        const route = chooseRoute(await plan(g, cur.screen.sig, goalSig), cur.screen.sig, failed);
+        const route = chooseRoute(await plan(g, cur.screen.sig, goalSig), cur.screen.sig, failed, undefined, owned);
         if (route) {
           const s = route.steps[0];
           action = { kind: s.kind as Kind, role: s.role, name: s.name, nth: s.nth, slot: s.slot || undefined };
@@ -189,7 +190,7 @@ export async function runTask(o: RunOptions): Promise<RunResult> {
       cur = nxt;
     }
 
-    if (outcome === "success") await recordReach(g, { id: task.id, text: task.text, site: task.site, sig: cur.screen.sig, now: now() });
+    if (outcome === "success") await recordReach(g, { id: task.id, text: task.text, site: task.site, sig: cur.screen.sig, now: now(), screen: cur.screen });
   } finally {
     if (guard) await page.unroute("**/*", guard).catch(() => {});
     await endRun(g, { id: runId, now: now(), outcome, steps: logs.length, llm: llmCalls, tokens, ms: now() - t0 });

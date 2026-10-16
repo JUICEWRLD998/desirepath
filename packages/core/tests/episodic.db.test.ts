@@ -1,7 +1,7 @@
 // Needs a FalkorDB: FALKORDB_URL=redis://127.0.0.1:6390 npm test. Skipped otherwise.
 import { test, before, after } from "node:test";
 import assert from "node:assert/strict";
-import { connect, endRun, ensureSchema, goalCandidates, goalSigById, graphName, outgoing, recordReach, recordStep, report, startRun,
+import { connect, endRun, ensureSchema, goalCandidates, goalSigById, graphName, outgoing, ownedEdges, recordReach, recordStep, report, startRun,
   type ReportParams, type Screen } from "../graph.ts";
 
 const run = `e${process.pid}`;
@@ -96,4 +96,27 @@ test("report stores the slot, and an absent slot is ''", { skip }, async () => {
   await report(g, edge("A", "C", "plain", 1));
   const r = (await g.query("MATCH ()-[e:ACT]->() RETURN e.key, e.slot ORDER BY e.key")).data;
   assert.deepEqual(r, [{ "e.key": "plain", "e.slot": "" }, { "e.key": "type", "e.slot": "query" }]);
+});
+
+test("ownedEdges returns only edges walked successfully by a successful run of exactly that task", { skip }, async () => {
+  const g = graph("owned"); await ensureSchema(g);
+  await report(g, edge("A", "B", "k1", 1)); await report(g, edge("B", "C", "k2", 1));
+  const walk = async (id: string, task: string, outcome: "success" | "failure", ok: boolean, key: string, from: string, to: string) => {
+    await startRun(g, { id, agent: "a", task, mode: "cold", now: 1 });
+    await recordStep(g, { run: id, i: 1, key, ok, ms: 1, source: "llm", from: screen(from), to: screen(to), observed: to, now: 1 });
+    await endRun(g, { id, now: 2, outcome, steps: 1, llm: 1, tokens: 1, ms: 1 });
+  };
+  await walk("r-a", "task A", "success", true, "k1", "A", "B");
+  await walk("r-b", "task B", "success", true, "k2", "B", "C");       // another task
+  await walk("r-c", "task A", "failure", true, "k2", "B", "C");       // same task, but the run failed
+  await walk("r-d", "task A", "success", false, "k3", "C", "D");      // same task, but the step failed
+  assert.deepEqual([...await ownedEdges(g, "task A")], ["A|k1"]);
+  assert.deepEqual([...await ownedEdges(g, "task B")], ["B|k2"]);
+  assert.deepEqual([...await ownedEdges(g, "task Z")], []);
+});
+
+test("recordReach creates the screen when the run never recorded it", { skip }, async () => {
+  const g = graph("reach-new"); await ensureSchema(g);
+  assert.equal(await recordReach(g, { id: "t", text: "x y", site: "s", sig: "LATE", now: 1, screen: screen("LATE") }), 1);
+  assert.equal(await count(g, "MATCH (s:State {sig:'LATE'}) RETURN count(s)"), 1);
 });

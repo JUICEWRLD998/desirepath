@@ -17,7 +17,8 @@ export async function execute(page: Page, a: Action, slots: Record<string, strin
       if (a.kind === "type") await loc.fill(value, { timeout });
       else await loc.selectOption(value, { timeout });
     }
-    await page.waitForLoadState("load", { timeout });
+    // The action worked. A slow page may still be loading; that is not a failure of the action.
+    await page.waitForLoadState("load", { timeout }).catch(() => {});
     return { ok: true };
   } catch (e) {
     return { ok: false, error: (e as Error).message.split("\n")[0] };

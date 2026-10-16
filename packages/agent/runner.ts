@@ -7,7 +7,7 @@ import { readdirSync, readFileSync } from "node:fs";
 import { chromium } from "playwright";
 import { connect, ensureSchema, graphName } from "../core/graph.ts";
 import { fill, type Task } from "./task.ts";
-import { runTask } from "./loop.ts";
+import { runAgents } from "./concurrent.ts";
 import { openRouterProposer } from "./llm.ts";
 import { fetchRobots } from "./robots.ts";
 import { newAgentContext } from "./browser.ts";
@@ -38,12 +38,14 @@ if (process.argv[1]?.replaceAll("\\", "/").endsWith("packages/agent/runner.ts"))
   try {
     const real = !/^(127\.0\.0\.1|localhost)$/.test(new URL(task.baseUrl).hostname);   // real sites: say who we are, obey robots.txt
     const robots = real ? await fetchRobots(new URL(task.baseUrl).origin) : undefined;
-    const page = await (await newAgentContext(browser, { identify: real })).newPage();
-    const result = await runTask({ graph, page, task, mode, tenant, robots, explore: flag("explore"), propose: openRouterProposer(),
-      maxSteps: arg("max-steps") ? Number(arg("max-steps")) : undefined, log: console.log });
-    console.log(JSON.stringify({ outcome: result.outcome, steps: result.steps.length, mapSteps: result.mapSteps,
-      failedMapSteps: result.failedMapSteps, llmCalls: result.llmCalls, tokens: result.tokens, ms: result.ms }, null, 2));
-    process.exitCode = result.outcome === "success" ? 0 : 1;
+    const agents = Number(arg("agents") ?? 1);   // several agents, one browser context each, all writing the same graph
+    const results = await runAgents({ browser, agents, identify: real, graph, task, mode, tenant, robots, explore: flag("explore"),
+      propose: openRouterProposer(), maxSteps: arg("max-steps") ? Number(arg("max-steps")) : undefined, log: console.log });
+    for (const [i, result] of results.entries()) {
+      console.log(JSON.stringify({ agent: `agent-${i + 1}`, outcome: result.outcome, steps: result.steps.length, mapSteps: result.mapSteps,
+        failedMapSteps: result.failedMapSteps, llmCalls: result.llmCalls, tokens: result.tokens, ms: result.ms }, null, 2));
+    }
+    process.exitCode = results.every(r => r.outcome === "success") ? 0 : 1;
   } finally {
     await browser.close(); await db.close();
   }

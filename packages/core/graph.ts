@@ -2,6 +2,7 @@
 import { readFileSync } from "node:fs";
 import { FalkorDB } from "falkordb";
 import { routeSuccess } from "./risk.ts";
+import { edgeId } from "./route.ts";
 
 export type Db = Awaited<ReturnType<typeof FalkorDB.connect>>;
 type G = ReturnType<Db["selectGraph"]>;
@@ -10,7 +11,7 @@ export type Graph = G;
 const query = (name: string) => readFileSync(new URL(`./queries/${name}.cypher`, import.meta.url), "utf8");
 const SQL = {
   report: query("report"), plan: query("plan"), goals: query("goals"), stats: query("stats"),
-  runStart: query("run_start"), runEnd: query("run_end"), step: query("step"), goal: query("goal"), outgoing: query("outgoing"), goalById: query("goal_by_id"), runEnsure: query("run_ensure"), explain: query("explain"),
+  runStart: query("run_start"), runEnd: query("run_end"), step: query("step"), goal: query("goal"), outgoing: query("outgoing"), goalById: query("goal_by_id"), owned: query("owned_edges"), runEnsure: query("run_ensure"), explain: query("explain"),
 };
 
 export function graphName(site: string, tenant?: string): string {
@@ -122,9 +123,10 @@ export async function recordStep(g: G, s: StepRecord): Promise<void> {
 }
 
 /** The screen `sig` satisfied the task `id`. Creates the Goal on first success. */
-export async function recordReach(g: G, p: { id: string; text: string; site: string; sig: string; now: number }): Promise<number> {
+export async function recordReach(g: G, p: { id: string; text: string; site: string; sig: string; now: number; screen?: Screen }): Promise<number> {
   // The full-text index keeps snake_case words whole, so store goal text with spaces: both spellings then match.
-  const r = (await g.query(SQL.goal, { params: { ...p, text: p.text.replaceAll("_", " ") } as never })).data![0] as Record<string, number>;
+  const r = (await g.query(SQL.goal, { params: { id: p.id, site: p.site, sig: p.sig, now: p.now, text: p.text.replaceAll("_", " "),
+    url: p.screen?.urlTemplate ?? "", title: p.screen?.title ?? "", landmarks: p.screen?.landmarks ?? [] } as never })).data![0] as Record<string, number>;
   return Object.values(r)[0];
 }
 
@@ -132,6 +134,12 @@ export interface Walk { "r.id": string; "r.agent": string; "r.mode": string; "st
 /** The runs that walked one edge, newest first (plan §7 explain). */
 export async function explain(g: G, from: string, key: string): Promise<Walk[]> {
   return (await g.query(SQL.explain, { params: { from, key } })).data as unknown as Walk[];
+}
+
+/** Edges (as `edgeId`s) that successful runs of exactly this task have walked, for preferring the task's own routes. */
+export async function ownedEdges(g: G, task: string): Promise<Set<string>> {
+  const rows = (await g.query(SQL.owned, { params: { task } })).data as Array<{ from: string; key: string }>;
+  return new Set(rows.map(r => edgeId(r.from, r.key)));
 }
 
 export interface Known { key: string; role: string; name: string; nth: number; ok: number; fail: number; to: string }

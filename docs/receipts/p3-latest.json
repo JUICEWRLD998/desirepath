@@ -1,14 +1,57 @@
 {
   "model": "google/gemini-2.5-flash",
   "verdict": {
+    "books-page2": {
+      "coldSteps": [
+        2,
+        2
+      ],
+      "mapSteps": [
+        2,
+        2
+      ],
+      "mapFewerThanColdMean": false
+    },
+    "books-open-book": {
+      "coldSteps": [
+        2,
+        2
+      ],
+      "mapSteps": [
+        4
+      ],
+      "mapFewerThanColdMean": false
+    },
     "books-default-page3": {
       "coldSteps": [
         3,
         3
       ],
       "mapSteps": [
-        3,
-        3
+        6,
+        6
+      ],
+      "mapFewerThanColdMean": false
+    },
+    "quotes-tag-author": {
+      "coldSteps": [
+        1,
+        1
+      ],
+      "mapSteps": [
+        1,
+        1
+      ],
+      "mapFewerThanColdMean": false
+    },
+    "quotes-tag-page2": {
+      "coldSteps": [
+        1,
+        1
+      ],
+      "mapSteps": [
+        1,
+        1
       ],
       "mapFewerThanColdMean": false
     },
@@ -22,10 +65,123 @@
         2
       ],
       "mapFewerThanColdMean": false
+    },
+    "wikipedia-desire-path-erosion": {
+      "coldSteps": [
+        1,
+        1
+      ],
+      "mapSteps": [
+        1,
+        1
+      ],
+      "mapFewerThanColdMean": false
+    },
+    "wikipedia-desire-path-yosemite": {
+      "coldSteps": [
+        1,
+        1
+      ],
+      "mapSteps": [
+        1,
+        1
+      ],
+      "mapFewerThanColdMean": false
     }
   },
   "runs": [
     {
+      "task": "books-page2",
+      "mode": "cold",
+      "n": 1,
+      "outcome": "success",
+      "steps": 2,
+      "mapSteps": 0,
+      "failedMapSteps": 0,
+      "llmCalls": 2,
+      "tokens": 3423,
+      "seconds": 13.9
+    },
+    {
+      "task": "books-page2",
+      "mode": "cold",
+      "n": 2,
+      "outcome": "success",
+      "steps": 2,
+      "mapSteps": 0,
+      "failedMapSteps": 0,
+      "llmCalls": 2,
+      "tokens": 3423,
+      "seconds": 14.8
+    },
+    {
+      "task": "books-page2",
+      "mode": "map",
+      "n": 1,
+      "outcome": "success",
+      "steps": 2,
+      "mapSteps": 2,
+      "failedMapSteps": 0,
+      "llmCalls": 0,
+      "tokens": 0,
+      "seconds": 11.3
+    },
+    {
+      "task": "books-page2",
+      "mode": "map",
+      "n": 2,
+      "outcome": "success",
+      "steps": 2,
+      "mapSteps": 2,
+      "failedMapSteps": 0,
+      "llmCalls": 0,
+      "tokens": 0,
+      "seconds": 10.3
+    },
+    {
+      "task": "books-open-book",
+      "mode": "cold",
+      "n": 1,
+      "outcome": "success",
+      "steps": 2,
+      "mapSteps": 0,
+      "failedMapSteps": 0,
+      "llmCalls": 2,
+      "tokens": 3037,
+      "seconds": 17.7
+    },
+    {
+      "task": "books-open-book",
+      "mode": "cold",
+      "n": 2,
+      "outcome": "success",
+      "steps": 2,
+      "mapSteps": 0,
+      "failedMapSteps": 0,
+      "llmCalls": 2,
+      "tokens": 3037,
+      "seconds": 15.1
+    },
+    {
+      "task": "books-open-book",
+      "mode": "map",
+      "n": 1,
+      "outcome": "success",
+      "steps": 4,
+      "mapSteps": 2,
+      "failedMapSteps": 1,
+      "llmCalls": 2,
+      "tokens": 3090,
+      "seconds": 31.4
+    },
+    {
+      "task": "books-open-book",
+      "mode": "map",
+      "n": 2,
+      "outcome": "error",
+      "error": "Cannot convert undefined or null to object"
+    },
+    {
       "task": "books-default-page3",
       "mode": "cold",
       "n": 1,
@@ -35,7 +191,7 @@
       "failedMapSteps": 0,
       "llmCalls": 3,
       "tokens": 5229,
-      "seconds": 24.7
+      "seconds": 18.9
     },
     {
       "task": "books-default-page3",
@@ -47,31 +203,127 @@
       "failedMapSteps": 0,
       "llmCalls": 3,
       "tokens": 5229,
-      "seconds": 18.6
+      "seconds": 16.1
     },
     {
       "task": "books-default-page3",
       "mode": "map",
       "n": 1,
       "outcome": "success",
-      "steps": 3,
-      "mapSteps": 2,
-      "failedMapSteps": 0,
-      "llmCalls": 1,
-      "tokens": 1726,
-      "seconds": 16
+      "steps": 6,
+      "mapSteps": 4,
+      "failedMapSteps": 1,
+      "llmCalls": 2,
+      "tokens": 3136,
+      "seconds": 37.4
     },
     {
       "task": "books-default-page3",
       "mode": "map",
       "n": 2,
       "outcome": "success",
-      "steps": 3,
-      "mapSteps": 2,
+      "steps": 6,
+      "mapSteps": 4,
+      "failedMapSteps": 1,
+      "llmCalls": 2,
+      "tokens": 3136,
+      "seconds": 31.1
+    },
+    {
+      "task": "quotes-tag-author",
+      "mode": "cold",
+      "n": 1,
+      "outcome": "success",
+      "steps": 1,
+      "mapSteps": 0,
       "failedMapSteps": 0,
       "llmCalls": 1,
-      "tokens": 1726,
-      "seconds": 23
+      "tokens": 908,
+      "seconds": 9.1
+    },
+    {
+      "task": "quotes-tag-author",
+      "mode": "cold",
+      "n": 2,
+      "outcome": "success",
+      "steps": 1,
+      "mapSteps": 0,
+      "failedMapSteps": 0,
+      "llmCalls": 1,
+      "tokens": 908,
+      "seconds": 7.9
+    },
+    {
+      "task": "quotes-tag-author",
+      "mode": "map",
+      "n": 1,
+      "outcome": "success",
+      "steps": 1,
+      "mapSteps": 1,
+      "failedMapSteps": 0,
+      "llmCalls": 0,
+      "tokens": 0,
+      "seconds": 8
+    },
+    {
+      "task": "quotes-tag-author",
+      "mode": "map",
+      "n": 2,
+      "outcome": "success",
+      "steps": 1,
+      "mapSteps": 1,
+      "failedMapSteps": 0,
+      "llmCalls": 0,
+      "tokens": 0,
+      "seconds": 7
+    },
+    {
+      "task": "quotes-tag-page2",
+      "mode": "cold",
+      "n": 1,
+      "outcome": "success",
+      "steps": 1,
+      "mapSteps": 0,
+      "failedMapSteps": 0,
+      "llmCalls": 1,
+      "tokens": 907,
+      "seconds": 6.7
+    },
+    {
+      "task": "quotes-tag-page2",
+      "mode": "cold",
+      "n": 2,
+      "outcome": "success",
+      "steps": 1,
+      "mapSteps": 0,
+      "failedMapSteps": 0,
+      "llmCalls": 1,
+      "tokens": 907,
+      "seconds": 6.6
+    },
+    {
+      "task": "quotes-tag-page2",
+      "mode": "map",
+      "n": 1,
+      "outcome": "success",
+      "steps": 1,
+      "mapSteps": 1,
+      "failedMapSteps": 0,
+      "llmCalls": 0,
+      "tokens": 0,
+      "seconds": 6
+    },
+    {
+      "task": "quotes-tag-page2",
+      "mode": "map",
+      "n": 2,
+      "outcome": "success",
+      "steps": 1,
+      "mapSteps": 1,
+      "failedMapSteps": 0,
+      "llmCalls": 0,
+      "tokens": 0,
+      "seconds": 5.8
     },
     {
       "task": "quotes-page3",
@@ -83,7 +335,7 @@
       "failedMapSteps": 0,
       "llmCalls": 2,
       "tokens": 1944,
-      "seconds": 9.8
+      "seconds": 13.5
     },
     {
       "task": "quotes-page3",
@@ -94,8 +346,8 @@
       "mapSteps": 0,
       "failedMapSteps": 0,
       "llmCalls": 2,
-      "tokens": 1944,
-      "seconds": 10.2
+      "tokens": 1946,
+      "seconds": 10.5
     },
     {
       "task": "quotes-page3",
@@ -107,7 +359,7 @@
       "failedMapSteps": 0,
       "llmCalls": 0,
       "tokens": 0,
-      "seconds": 9.3
+      "seconds": 11.2
     },
     {
       "task": "quotes-page3",
@@ -119,7 +371,103 @@
       "failedMapSteps": 0,
       "llmCalls": 0,
       "tokens": 0,
-      "seconds": 8.6
+      "seconds": 9.1
+    },
+    {
+      "task": "wikipedia-desire-path-erosion",
+      "mode": "cold",
+      "n": 1,
+      "outcome": "success",
+      "steps": 1,
+      "mapSteps": 0,
+      "failedMapSteps": 0,
+      "llmCalls": 1,
+      "tokens": 2158,
+      "seconds": 7.5
+    },
+    {
+      "task": "wikipedia-desire-path-erosion",
+      "mode": "cold",
+      "n": 2,
+      "outcome": "success",
+      "steps": 1,
+      "mapSteps": 0,
+      "failedMapSteps": 0,
+      "llmCalls": 1,
+      "tokens": 2158,
+      "seconds": 6.5
+    },
+    {
+      "task": "wikipedia-desire-path-erosion",
+      "mode": "map",
+      "n": 1,
+      "outcome": "success",
+      "steps": 1,
+      "mapSteps": 1,
+      "failedMapSteps": 0,
+      "llmCalls": 0,
+      "tokens": 0,
+      "seconds": 6.3
+    },
+    {
+      "task": "wikipedia-desire-path-erosion",
+      "mode": "map",
+      "n": 2,
+      "outcome": "success",
+      "steps": 1,
+      "mapSteps": 1,
+      "failedMapSteps": 0,
+      "llmCalls": 0,
+      "tokens": 0,
+      "seconds": 6.5
+    },
+    {
+      "task": "wikipedia-desire-path-yosemite",
+      "mode": "cold",
+      "n": 1,
+      "outcome": "success",
+      "steps": 1,
+      "mapSteps": 0,
+      "failedMapSteps": 0,
+      "llmCalls": 1,
+      "tokens": 2167,
+      "seconds": 9.4
+    },
+    {
+      "task": "wikipedia-desire-path-yosemite",
+      "mode": "cold",
+      "n": 2,
+      "outcome": "success",
+      "steps": 1,
+      "mapSteps": 0,
+      "failedMapSteps": 0,
+      "llmCalls": 1,
+      "tokens": 2167,
+      "seconds": 18.2
+    },
+    {
+      "task": "wikipedia-desire-path-yosemite",
+      "mode": "map",
+      "n": 1,
+      "outcome": "success",
+      "steps": 1,
+      "mapSteps": 1,
+      "failedMapSteps": 1,
+      "llmCalls": 0,
+      "tokens": 0,
+      "seconds": 20.2
+    },
+    {
+      "task": "wikipedia-desire-path-yosemite",
+      "mode": "map",
+      "n": 2,
+      "outcome": "success",
+      "steps": 1,
+      "mapSteps": 0,
+      "failedMapSteps": 0,
+      "llmCalls": 1,
+      "tokens": 2167,
+      "seconds": 9.7
     }
   ]
 }

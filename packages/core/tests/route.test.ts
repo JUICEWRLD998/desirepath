@@ -48,3 +48,12 @@ test("no routes, and zero-hop routes, give nothing to follow", () => {
   assert.equal(chooseRoute([], "A", new Set()), undefined);
   assert.equal(chooseRoute([{ steps: [], hops: 0, weight: 0, ms: 0, pSuccess: 1 }], "A", new Set()), undefined);
 });
+
+test("a route this task has walked before beats a cheaper route that belongs to another task", () => {
+  const other = route(step("mystery", "SHELF"), step("book", "DONE"));              // 2 hops, walked by someone else's task
+  const mine = route(step("travel", "SHELF"), step("book", "DONE"), step("x", "Y"));
+  assert.equal(chooseRoute([other, mine], "HOME", new Set()), other, "without task memory the cheaper route wins");
+  // mine = HOME -travel-> SHELF -book-> DONE -x-> Y ; owned lists those exact (from, key) pairs
+  assert.equal(chooseRoute([other, mine], "HOME", new Set(), 0.6, new Set([edgeId("HOME", "travel"), edgeId("SHELF", "book"), edgeId("DONE", "x")])), mine);
+  assert.equal(chooseRoute([other, mine], "HOME", new Set(), 0.6, new Set()), other, "nothing owned: fall back to the cheapest");
+});
