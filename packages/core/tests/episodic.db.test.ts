@@ -5,7 +5,7 @@ import { connect, endRun, ensureSchema, goalCandidates, graphName, outgoing, rec
   type ReportParams, type Screen } from "../graph.ts";
 
 const run = `e${process.pid}`;
-const skip = !process.env.FALKORDB_URL;
+const skip = !(process.env.FALKORDB_URL || process.env.FALKORDB_HOST);
 let db: Awaited<ReturnType<typeof connect>>;
 const made: string[] = [];
 const graph = (site: string) => { const n = graphName(`${site}-${run}`); made.push(n); return db.selectGraph(n); };

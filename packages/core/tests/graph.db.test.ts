@@ -4,7 +4,7 @@ import assert from "node:assert/strict";
 import { connect, ensureSchema, ftQuery, goalCandidates, graphName, plan, report, type ReportParams } from "../graph.ts";
 
 const run = `t${process.pid}`;
-const skip = !process.env.FALKORDB_URL;
+const skip = !(process.env.FALKORDB_URL || process.env.FALKORDB_HOST);
 let db: Awaited<ReturnType<typeof connect>>;
 const made: string[] = [];
 const graph = (site: string, tenant?: string) => { const n = graphName(`${site}-${run}`, tenant); made.push(n); return db.selectGraph(n); };

@@ -2,19 +2,19 @@
 import { test, after } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { FalkorDB } from "falkordb";
+import { connect } from "../graph.ts";
 import { risk } from "../risk.ts";
 
-const url = process.env.FALKORDB_URL;
+const url = process.env.FALKORDB_URL || process.env.FALKORDB_HOST;
 const q = (f: string) => readFileSync(new URL(`../queries/${f}`, import.meta.url), "utf8");
 const base = { from: "s1", fromUrl: "u1", fromTitle: "t1", fromLandmarks: ["a"], to: "s2", toUrl: "u2", toTitle: "t2",
   toLandmarks: ["b"], key: "click:link:x:0", kind: "click", role: "link", name: "x", nth: 0, label: "[link] x -> click", slot: "", pre: "", now: 1 };
 const name = `test_report_${process.pid}`;
-let db: Awaited<ReturnType<typeof FalkorDB.connect>> | undefined;
+let db: Awaited<ReturnType<typeof connect>> | undefined;
 after(async () => { if (db) { await db.selectGraph(name).delete().catch(() => {}); await db.close(); } });
 
 test("report.cypher: counts, running-mean ms, and risk reflect the NEW counts", { skip: !url }, async () => {
-  db = await FalkorDB.connect({ url: url! });
+  db = await connect();
   const g = db.selectGraph(name);
   const r1 = (await g.query(q("report.cypher"), { params: { ...base, ok: 1, fail: 0, ms: 100 } })).data![0] as Record<string, number>;
   assert.equal(r1["e.ok"], 1); assert.equal(r1["e.fail"], 0); assert.equal(r1["e.ms"], 100);

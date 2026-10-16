@@ -8,7 +8,7 @@
     "p0:falkor": "tsx spikes/falkor.ts",
     "p0:llm": "tsx spikes/llm.ts",
     "p0:sites": "tsx spikes/signature.ts",
-    "test": "node --import tsx --test --test-concurrency=1 --test-timeout=120000 packages/core/tests/*.test.ts packages/agent/tests/*.test.ts",
+    "test": "node --import dotenv/config --import tsx --test --test-concurrency=1 --test-timeout=120000 packages/core/tests/*.test.ts packages/agent/tests/*.test.ts",
     "p0:net": "tsx spikes/net.ts",
     "shop": "tsx apps/testshop/server.ts",
     "agent": "tsx packages/agent/runner.ts",

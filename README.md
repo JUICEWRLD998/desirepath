@@ -65,7 +65,7 @@ over `.env`.
 ## Commands
 
 ```bash
-npm test                  # 50 tests; the 17 that need a database are skipped unless FALKORDB_URL is set in the shell
+npm test                  # 50 tests; the 17 that need a database are skipped unless FALKORDB_URL or FALKORDB_HOST is set (`.env` is loaded)
 FALKORDB_URL=redis://127.0.0.1:6390 npm test      # all 50 (needs Chromium; files run one at a time on purpose)
 npm run typecheck         # tsc --noEmit
 

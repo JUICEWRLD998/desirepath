@@ -13,7 +13,7 @@
       "failedMapSteps": 0,
       "llmCalls": 4,
       "tokens": 1180,
-      "seconds": 11.7,
+      "seconds": 10.6,
       "actions": [
         "llm:ok [textbox] Search products -> type",
         "llm:ok [button] Search -> click",
@@ -32,7 +32,7 @@
       "failedMapSteps": 0,
       "llmCalls": 0,
       "tokens": 0,
-      "seconds": 0.6,
+      "seconds": 5.5,
       "actions": [
         "map:ok [button] Search -> click",
         "map:ok [button] Quick add -> click",
@@ -45,12 +45,31 @@
       "explore": true,
       "layout": "a",
       "outcome": "success",
+      "steps": 4,
+      "mapSteps": 0,
+      "failedMapSteps": 0,
+      "llmCalls": 4,
+      "tokens": 1409,
+      "seconds": 10,
+      "actions": [
+        "llm:ok [textbox] Search products -> type",
+        "llm:ok [button] Search -> click",
+        "llm:ok [button] Quick add -> click",
+        "llm:ok [link] Checkout -> click"
+      ]
+    },
+    {
+      "label": "3.2 explore run (find a second route)",
+      "mode": "cold",
+      "explore": true,
+      "layout": "a",
+      "outcome": "success",
       "steps": 5,
       "mapSteps": 0,
       "failedMapSteps": 0,
       "llmCalls": 5,
       "tokens": 1745,
-      "seconds": 8.7,
+      "seconds": 13.5,
       "actions": [
         "llm:ok [textbox] Search products -> type",
         "llm:ok [button] Search -> click",
@@ -70,7 +89,7 @@
       "failedMapSteps": 1,
       "llmCalls": 0,
       "tokens": 0,
-      "seconds": 4.8,
+      "seconds": 13,
       "actions": [
         "map:ok [button] Search -> click",
         "map:FAIL [button] Quick add -> click",
@@ -90,7 +109,7 @@
       "failedMapSteps": 1,
       "llmCalls": 0,
       "tokens": 0,
-      "seconds": 4.9,
+      "seconds": 13.1,
       "actions": [
         "map:ok [button] Search -> click",
         "map:FAIL [button] Quick add -> click",
@@ -110,7 +129,7 @@
       "failedMapSteps": 0,
       "llmCalls": 0,
       "tokens": 0,
-      "seconds": 0.8,
+      "seconds": 7.2,
       "actions": [
         "map:ok [button] Search -> click",
         "map:ok [link] Trail Mug -> click",
@@ -127,9 +146,9 @@
   "stats": [
     {
       "mode": "cold",
-      "runs": 2,
-      "steps": 4.5,
-      "llm": 4.5
+      "runs": 3,
+      "steps": 4.33333333333333,
+      "llm": 4.33333333333333
     },
     {
       "mode": "map",

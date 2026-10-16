@@ -3,7 +3,7 @@
 Raw output of every spike: `spikes/out/`. Raw output of the Phase 2 run: `docs/receipts/p2-latest.json`.
 
 **Local** = a FalkorDB module (ver 41803) from the `falkordblite` 0.10.0 PyPI package, started by hand with `redis-server --loadmodule falkordb.so` (see README, "Local FalkorDB"). Every database test and the Phase 2 run used it.
-**Cloud** = the FalkorDB Cloud free instance. It has **never accepted the credentials** (see Phase 0 below).
+**Cloud** = the FalkorDB Cloud free instance. Connected on 2026-10-16 with the split FALKORDB_HOST/PORT/USERNAME/PASSWORD fields (the FALKORDB_URL form is rejected, probably URL-encoding of the password).
 
 ## Where each phase stands (2026-10-16)
 
@@ -19,12 +19,12 @@ Whole suite: `FALKORDB_URL=redis://127.0.0.1:6390 npm test` gives 50 tests, 50 p
 
 | Spike | Local | Cloud | Result |
 |---|---|---|---|
-| Connection round trip | pass (6.6 ms, meaningless for Cloud) | **not run** | `WRONGPASS` from Cloud, reproduced 2026-10-16: the host answers and rejects the username/password in `.env` |
-| `algo.SPpaths`, float `weightProp`, `costProp`+`maxCost`, `pathCount: 3` | pass | **not run** | three routes in weight order, see below |
-| Cypher `log()` | pass | **not run** | `-log(0.5)` = 0.693147180559945; risk is computed in Cypher |
-| Full-text index on `Goal` | pass | **not run** | `CALL db.idx.fulltext.createNodeIndex('Goal','text')`, `queryNodes('Goal','travel')` |
-| `algo.pageRank`, `algo.WCC` syntax | pass | **not run** | `CALL algo.pageRank('S','ACT')`, `CALL algo.WCC({nodeLabels:['S'],relationshipTypes:['ACT']})` |
-| Two graphs (`public:x`, `tenant:a:x`) in one request | pass | **not run** | colon names work and are isolated |
+| Connection round trip | pass (6.6 ms) | **pass (305 ms)** | Cloud first rejected the URL form and the old password; split fields work |
+| `algo.SPpaths`, float `weightProp`, `costProp`+`maxCost`, `pathCount: 3` | pass | **pass** | three routes in weight order, see below |
+| Cypher `log()` | pass | **pass** | `-log(0.5)` = 0.693147180559945; risk is computed in Cypher |
+| Full-text index on `Goal` | pass | **pass** | `CALL db.idx.fulltext.createNodeIndex('Goal','text')`, `queryNodes('Goal','travel')` |
+| `algo.pageRank`, `algo.WCC` syntax | pass | **pass** | `CALL algo.pageRank('S','ACT')`, `CALL algo.WCC({nodeLabels:['S'],relationshipTypes:['ACT']})` |
+| Two graphs (`public:x`, `tenant:a:x`) in one request | pass | **pass** | colon names work and are isolated |
 | Playwright accessibility snapshot | pass (headless Chromium, `ariaSnapshot()`) on his machine | n/a | roles and names on all sites; quoted entries need the parser fix below |
 | OpenRouter structured output | n/a | **pass** | `google/gemini-2.5-flash`, 85 in / 24 out tokens, $0.0000855. Phase 2 moved it to `generateText` + `Output.object` (the SDK deprecates `generateObject`) |
 | Signature stability, books.toscrape | pass | n/a | 3 loads of 4 URLs give one `sig` each; two product pages share a `sig`; category differs from product |

@@ -11,7 +11,7 @@ import { runTask, type RunResult } from "../loop.ts";
 import type { ProposeInput, Proposer } from "../llm.ts";
 import { fill, type Task } from "../task.ts";
 
-const skip = !process.env.FALKORDB_URL;
+const skip = !(process.env.FALKORDB_URL || process.env.FALKORDB_HOST);
 let shop: Shop, browser: Browser, db: Awaited<ReturnType<typeof connect>>, g: Graph;
 const name = graphName(`loop-${process.pid}`);
 before(async () => {
