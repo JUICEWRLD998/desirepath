@@ -8,13 +8,14 @@
     "p0:falkor": "tsx spikes/falkor.ts",
     "p0:llm": "tsx spikes/llm.ts",
     "p0:sites": "tsx spikes/signature.ts",
-    "test": "node --import dotenv/config --import tsx --test --test-concurrency=1 --test-timeout=120000 packages/core/tests/*.test.ts packages/agent/tests/*.test.ts",
+    "test": "node --import dotenv/config --import tsx --test --test-concurrency=1 --test-timeout=120000 packages/core/tests/*.test.ts packages/agent/tests/*.test.ts packages/mcp/tests/*.test.ts",
     "p0:net": "tsx spikes/net.ts",
     "shop": "tsx apps/testshop/server.ts",
     "agent": "tsx packages/agent/runner.ts",
     "typecheck": "tsc --noEmit",
     "p2": "tsx scripts/p2_demo.ts",
-    "p3": "tsx scripts/p3_runs.ts"
+    "p3": "tsx scripts/p3_runs.ts",
+    "mcp": "tsx packages/mcp/server.ts"
   },
   "devDependencies": {
     "@types/node": "^26.6.5",
@@ -22,6 +23,7 @@
     "typescript": "^7.0.2"
   },
   "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0",
     "@openrouter/ai-sdk-provider": "^3.1.0",
     "ai": "^7.0.142",
     "dotenv": "^18.0.8",

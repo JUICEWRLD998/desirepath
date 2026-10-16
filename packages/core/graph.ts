@@ -10,7 +10,7 @@ export type Graph = G;
 const query = (name: string) => readFileSync(new URL(`./queries/${name}.cypher`, import.meta.url), "utf8");
 const SQL = {
   report: query("report"), plan: query("plan"), goals: query("goals"), stats: query("stats"),
-  runStart: query("run_start"), runEnd: query("run_end"), step: query("step"), goal: query("goal"), outgoing: query("outgoing"), goalById: query("goal_by_id"),
+  runStart: query("run_start"), runEnd: query("run_end"), step: query("step"), goal: query("goal"), outgoing: query("outgoing"), goalById: query("goal_by_id"), runEnsure: query("run_ensure"), explain: query("explain"),
 };
 
 export function graphName(site: string, tenant?: string): string {
@@ -101,6 +101,11 @@ export async function startRun(g: G, r: RunStart): Promise<void> {
   await g.query(SQL.runStart, { params: { ...r, tenant: r.tenant ?? "" } as never });
 }
 
+/** Open a run if it is not open yet (used by clients that report over MCP without calling startRun). */
+export async function ensureRun(g: G, r: RunStart): Promise<void> {
+  await g.query(SQL.runEnsure, { params: { ...r, tenant: r.tenant ?? "" } as never });
+}
+
 export interface RunEnd { id: string; now: number; outcome: "success" | "failure"; steps: number; llm: number; tokens: number; ms: number }
 export async function endRun(g: G, r: RunEnd): Promise<void> {
   await g.query(SQL.runEnd, { params: r as never });
@@ -121,6 +126,12 @@ export async function recordReach(g: G, p: { id: string; text: string; site: str
   // The full-text index keeps snake_case words whole, so store goal text with spaces: both spellings then match.
   const r = (await g.query(SQL.goal, { params: { ...p, text: p.text.replaceAll("_", " ") } as never })).data![0] as Record<string, number>;
   return Object.values(r)[0];
+}
+
+export interface Walk { "r.id": string; "r.agent": string; "r.mode": string; "st.ok": number; "st.ms": number; "r.started": number }
+/** The runs that walked one edge, newest first (plan §7 explain). */
+export async function explain(g: G, from: string, key: string): Promise<Walk[]> {
+  return (await g.query(SQL.explain, { params: { from, key } })).data as unknown as Walk[];
 }
 
 export interface Known { key: string; role: string; name: string; nth: number; ok: number; fail: number; to: string }
