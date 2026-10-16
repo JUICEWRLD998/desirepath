@@ -1,0 +1,141 @@
+// The agent loop (plan §8): observe -> plan -> act -> report. The LLM is called only when the map has no confident route.
+// Cold mode is the honest baseline: same loop, planner off, map still recorded.
+import { randomUUID } from "node:crypto";
+import type { Page } from "playwright";
+import { endRun, goalCandidates, outgoing, plan, recordReach, recordStep, report, startRun,
+  type Graph, type ReportParams, type Screen } from "../core/graph.ts";
+import { chooseRoute, edgeId } from "../core/route.ts";
+import { actionKey } from "../core/signature.ts";
+import { execute, type Action } from "./execute.ts";
+import { MAX_CANDIDATES, describe, type Proposer } from "./llm.ts";
+import { observe, type Kind, type Observation } from "./observe.ts";
+import { goalMet, type Task } from "./task.ts";
+
+export interface RunOptions {
+  graph: Graph;
+  page: Page;
+  task: Task;
+  mode: "cold" | "map";
+  propose: Proposer;
+  agent?: string;
+  tenant?: string;
+  /** Cold runs only: tell the LLM which actions the map already knows so the run finds a different route. */
+  explore?: boolean;
+  maxSteps?: number;
+  actionTimeout?: number;
+  now?: () => number;
+  log?: (line: string) => void;
+}
+
+export interface StepLog { i: number; source: "map" | "llm"; action: string; ok: boolean; ms: number; from: string; observed: string; error?: string }
+export interface RunResult {
+  runId: string; outcome: "success" | "failure"; steps: StepLog[]; llmCalls: number; tokens: number; ms: number;
+  mapSteps: number; failedMapSteps: number;
+}
+
+/** Observe, retrying once if a navigation was still in flight. */
+async function observeSettled(page: Page): Promise<Observation> {
+  try { return await observe(page); }
+  catch { await page.waitForLoadState("load").catch(() => {}); return await observe(page); }
+}
+
+const MAX_LLM_ERRORS = 3;
+
+export async function runTask(o: RunOptions): Promise<RunResult> {
+  const { graph: g, page, task } = o;
+  const now = o.now ?? Date.now;
+  const log = o.log ?? (() => {});
+  const maxSteps = o.maxSteps ?? 40, timeout = o.actionTimeout ?? 4000;
+  const runId = randomUUID().replaceAll("-", "").slice(0, 16);
+  const t0 = now();
+  await startRun(g, { id: runId, agent: o.agent ?? "agent-1", tenant: o.tenant, task: task.text, mode: o.mode, now: t0 });
+
+  const logs: StepLog[] = [];
+  const failed = new Set<string>();   // edges that failed in THIS run; never retried within it
+  const history: string[] = [];
+  let llmCalls = 0, tokens = 0, llmErrors = 0, outcome: "success" | "failure" = "failure";
+  try {
+    await page.goto(new URL(task.start, task.baseUrl).href, { waitUntil: "load", timeout: 30_000 });
+    const goalSig = o.mode === "map" ? (await goalCandidates(g, task.text))[0]?.goalSig : undefined;
+    let cur = await observeSettled(page);
+
+    for (let i = 1; ; i++) {
+      if (goalMet(task, cur)) { outcome = "success"; break; }
+      if (i > maxSteps) break;
+
+      let action: Action | undefined;
+      let source: "map" | "llm" = "llm";
+      let expectedTo = "";
+      let key = "";
+      if (goalSig) {
+        const route = chooseRoute(await plan(g, cur.screen.sig, goalSig), cur.screen.sig, failed);
+        if (route) {
+          const s = route.steps[0];
+          action = { kind: s.kind as Kind, role: s.role, name: s.name, nth: s.nth, slot: s.slot || undefined };
+          source = "map"; expectedTo = s.to; key = s.key;
+        }
+      }
+      if (!action) {
+        const known = o.explore ? await outgoing(g, cur.screen.sig) : [];
+        llmCalls++;
+        let p;
+        try { p = await o.propose({ task, obs: cur, history, known, explore: !!o.explore }); }
+        catch (e) {
+          if (++llmErrors >= MAX_LLM_ERRORS) throw new Error(`LLM failed ${MAX_LLM_ERRORS} times: ${(e as Error).message}`);
+          history.push("The previous answer was not usable."); log(`${i}. LLM error: ${(e as Error).message.split("\n")[0]}`);
+          continue;
+        }
+        llmErrors = 0; tokens += p.tokens;
+        const c = p.index >= 1 && p.index <= Math.min(cur.candidates.length, MAX_CANDIDATES) ? cur.candidates[p.index - 1] : undefined;
+        if (!c) { history.push(`Choice ${p.index} is not on the list.`); log(`${i}. LLM chose ${p.index}: not on the list`); continue; }
+        action = { kind: c.kind, role: c.role, name: c.name, nth: c.nth, slot: c.kind === "click" ? undefined : p.slot ?? undefined };
+        key = actionKey(action.kind, action.role, action.name, action.nth);
+      }
+
+      const label = `[${action.role}] ${action.name} -> ${action.kind}`;
+      const ts = now();
+      const res = await execute(page, action, task.slots, timeout);
+      const ms = now() - ts;
+      let nxt = await observeSettled(page);
+
+      const edge = (to: Screen, ok: boolean): ReportParams => ({
+        from: cur.screen.sig, fromUrl: cur.screen.urlTemplate, fromTitle: cur.screen.title, fromLandmarks: cur.screen.landmarks,
+        to: to.sig, toUrl: to.urlTemplate, toTitle: to.title, toLandmarks: to.landmarks,
+        key, kind: action!.kind, role: action!.role, name: action!.name, nth: action!.nth, label, slot: action!.slot ?? "",
+        ok: ok ? 1 : 0, fail: ok ? 0 : 1, ms, now: now() });
+
+      let ok: boolean;
+      if (source === "map") {
+        // The edge promised a screen. Anything else is a failure, even when the click itself worked.
+        ok = res.ok && nxt.screen.sig === expectedTo;
+        // On failure the edge keeps its expected target (that screen is already in the graph); only its counts change.
+        const target: Screen = ok ? nxt.screen : { ...nxt.screen, sig: expectedTo };
+        await report(g, edge(target, ok));
+        await recordStep(g, { run: runId, i, key, ok, ms, source, from: cur.screen, to: target, observed: nxt.screen.sig, now: now() });
+        if (!ok) {
+          failed.add(edgeId(cur.screen.sig, key));
+          history.push(`The map's step ${label} did not lead where expected.`);
+          if (res.ok && nxt.screen.sig !== cur.screen.sig) {   // landed somewhere unexpected: back out to the known screen
+            await page.goBack({ waitUntil: "load", timeout }).catch(() => {});
+            nxt = await observeSettled(page);
+          }
+        }
+      } else {
+        // An LLM action becomes an edge only if it worked: it must have moved the page, or filled a field.
+        ok = res.ok && (nxt.screen.sig !== cur.screen.sig || action.kind !== "click");
+        if (ok) await report(g, edge(nxt.screen, true));
+        await recordStep(g, { run: runId, i, key, ok, ms, source, from: cur.screen, to: ok ? nxt.screen : cur.screen, observed: nxt.screen.sig, now: now() });
+        history.push(ok ? `${describe(action)} -> ${nxt.screen.title}` : `${describe(action)} did nothing${res.error ? ` (${res.error})` : ""}`);
+      }
+      logs.push({ i, source, action: label, ok, ms, from: cur.screen.title, observed: nxt.screen.title, error: res.error });
+      log(`${i}. [${source}] ${label} ${ok ? "ok" : "FAILED"} (${ms} ms) ${cur.screen.title} -> ${nxt.screen.title}`);
+      cur = nxt;
+    }
+
+    if (outcome === "success") await recordReach(g, { id: task.id, text: task.text, site: task.site, sig: cur.screen.sig, now: now() });
+  } finally {
+    await endRun(g, { id: runId, now: now(), outcome, steps: logs.length, llm: llmCalls, tokens, ms: now() - t0 });
+  }
+  return { runId, outcome, steps: logs, llmCalls, tokens, ms: now() - t0,
+    mapSteps: logs.filter(s => s.source === "map").length, failedMapSteps: logs.filter(s => s.source === "map" && !s.ok).length };
+}

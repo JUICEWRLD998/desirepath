@@ -15,3 +15,5 @@ for (const u of hosts) {
     console.log("FAIL", u, (e as Error).message);
   }
 }
+
+export {};

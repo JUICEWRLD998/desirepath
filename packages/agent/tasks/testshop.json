@@ -1,0 +1,11 @@
+[
+  {
+    "id": "testshop-add-and-checkout",
+    "site": "testshop",
+    "baseUrl": "http://127.0.0.1:4100",
+    "start": "/",
+    "text": "Add the {product} to the cart and reach checkout",
+    "slots": { "product": "Trail Mug" },
+    "goal": { "path": "/checkout", "textIncludes": ["{product}"] }
+  }
+]

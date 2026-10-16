@@ -3,8 +3,9 @@ import { readFileSync } from "node:fs";
 import { FalkorDB } from "falkordb";
 import { routeSuccess } from "./risk.ts";
 
-type Db = Awaited<ReturnType<typeof FalkorDB.connect>>;
+export type Db = Awaited<ReturnType<typeof FalkorDB.connect>>;
 type G = ReturnType<Db["selectGraph"]>;
+export type Graph = G;
 
 const query = (name: string) => readFileSync(new URL(`./queries/${name}.cypher`, import.meta.url), "utf8");
 const SQL = {

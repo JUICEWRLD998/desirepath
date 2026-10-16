@@ -12,6 +12,8 @@ const graph = (site: string) => { const n = graphName(`${site}-${run}`); made.pu
 before(async () => { if (!skip) db = await connect(); });
 after(async () => { if (!skip) { for (const n of made) await db.selectGraph(n).delete().catch(() => {}); await db.close(); } });
 
+type Gr = ReturnType<typeof graph>;
+const count = async (g: Gr, q: string) => Object.values((await g.query(q)).data![0] as Record<string, number>)[0];
 const screen = (sig: string): Screen => ({ sig, urlTemplate: `https://x/${sig}`, title: sig, landmarks: [`link:${sig}`] });
 const edge = (from: string, to: string, key: string, ok: 0 | 1): ReportParams => ({
   from, fromUrl: `https://x/${from}`, fromTitle: from, fromLandmarks: [], to, toUrl: `https://x/${to}`, toTitle: to, toLandmarks: [],
@@ -41,7 +43,7 @@ test("a failed map step is attributed to the edge it expected to walk, not the s
   const r = (await g.query("MATCH (st:Step)-[:FROM]->(a:State), (st)-[:TO]->(b:State) RETURN a.sig, b.sig, st.ok, st.observed")).data;
   assert.deepEqual(r, [{ "a.sig": "A", "b.sig": "B", "st.ok": 0, "st.observed": "A" }]);
   // recording the step created no extra edge
-  assert.equal((await g.query("MATCH ()-[e:ACT]->() RETURN count(e)")).data![0]["count(e)" as never], 1);
+  assert.equal(await count(g, "MATCH ()-[e:ACT]->() RETURN count(e)"), 1);
 });
 
 test("a step does not create a duplicate state, and a step without an edge leaves no ACT behind", { skip }, async () => {
@@ -49,9 +51,9 @@ test("a step does not create a duplicate state, and a step without an edge leave
   await startRun(g, { id: "r3", agent: "a1", task: "t", mode: "cold", now: 10 });
   await recordStep(g, { run: "r3", i: 1, key: "click:button:nothing:0", ok: false, ms: 10, source: "llm", from: screen("A"), to: screen("A"), observed: "A", now: 10 });
   await recordStep(g, { run: "r3", i: 2, key: "click:button:nothing:0", ok: false, ms: 10, source: "llm", from: screen("A"), to: screen("A"), observed: "A", now: 10 });
-  assert.equal((await g.query("MATCH (s:State) RETURN count(s)")).data![0]["count(s)" as never], 1);
-  assert.equal((await g.query("MATCH ()-[e:ACT]->() RETURN count(e)")).data![0]["count(e)" as never], 0);
-  assert.equal((await g.query("MATCH (st:Step) RETURN count(st)")).data![0]["count(st)" as never], 2);
+  assert.equal(await count(g, "MATCH (s:State) RETURN count(s)"), 1);
+  assert.equal(await count(g, "MATCH ()-[e:ACT]->() RETURN count(e)"), 0);
+  assert.equal(await count(g, "MATCH (st:Step) RETURN count(st)"), 2);
 });
 
 test("recordReach creates the goal once, counts repeats, and is found by free text", { skip }, async () => {
@@ -60,7 +62,7 @@ test("recordReach creates the goal once, counts repeats, and is found by free te
   const p = { id: "shop-checkout", text: "add the Trail Mug to the cart and reach checkout", site: "testshop", sig: "DONE", now: 5 };
   assert.equal(await recordReach(g, p), 1);
   assert.equal(await recordReach(g, { ...p, now: 6 }), 2);
-  assert.equal((await g.query("MATCH (g:Goal) RETURN count(g)")).data![0]["count(g)" as never], 1);
+  assert.equal(await count(g, "MATCH (g:Goal) RETURN count(g)"), 1);
   const found = await goalCandidates(g, "Please add a trail mug to my cart, then check out!");
   assert.equal(found[0]?.goalSig, "DONE");
   assert.equal(found[0]?.times, 2);
