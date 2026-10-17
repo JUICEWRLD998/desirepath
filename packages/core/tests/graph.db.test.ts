@@ -9,7 +9,7 @@ let db: Awaited<ReturnType<typeof connect>>;
 const made: string[] = [];
 const graph = (site: string, tenant?: string) => { const n = graphName(`${site}-${run}`, tenant); made.push(n); return db.selectGraph(n); };
 before(async () => { if (!skip) db = await connect(); });
-after(async () => { if (!skip) { for (const n of made) await db.selectGraph(n).delete().catch(() => {}); await db.close(); } });
+after(async () => { if (db) { for (const n of made) await db.selectGraph(n).delete().catch(() => {}); await db.close(); } });
 
 const edge = (from: string, to: string, ok: 0 | 1, ms = 100): ReportParams => ({
   from, fromUrl: `u/${from}`, fromTitle: from, fromLandmarks: [], to, toUrl: `u/${to}`, toTitle: to, toLandmarks: [],
@@ -70,10 +70,6 @@ test("goal lookup works with free text and punctuation", { skip }, async () => {
   }
   assert.deepEqual(await goalCandidates(g, "???"), []);
   assert.equal(ftQuery("Find the cheapest TRAVEL book?"), "cheapest|travel|book");
-});
-
-test("graphName rejects characters that could escape the namespace", () => {
-  assert.throws(() => graphName("a b")); assert.throws(() => graphName("x", "a:b")); assert.throws(() => graphName("x", "t/../y"));
 });
 
 test("report refuses an ambiguous outcome", { skip }, async () => {

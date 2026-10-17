@@ -2,7 +2,7 @@
 import { existsSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { FalkorDB } from "falkordb";
+import { FalkorDB, type FalkorDBOptions } from "falkordb";
 import { routeSuccess } from "./risk.ts";
 import { edgeId } from "./route.ts";
 
@@ -37,14 +37,29 @@ export function m2wGraphName(site: string): string {
   return `m2w:${site}`;
 }
 
-export function connect(env: NodeJS.ProcessEnv = process.env): Promise<Db> {
-  const { FALKORDB_URL, FALKORDB_HOST, FALKORDB_PORT, FALKORDB_USERNAME, FALKORDB_PASSWORD, FALKORDB_TLS } = env;
-  if (FALKORDB_HOST) {
-    return FalkorDB.connect({ username: FALKORDB_USERNAME || "default", password: FALKORDB_PASSWORD,
-      socket: { host: FALKORDB_HOST, port: Number(FALKORDB_PORT || 6379), tls: FALKORDB_TLS === "true" } as never });
+export function connectionOptions(env: NodeJS.ProcessEnv = process.env): FalkorDBOptions {
+  const url = env.FALKORDB_URL?.trim();
+  const host = env.FALKORDB_HOST?.trim();
+  if (url && host) {
+    throw new Error("Set either FALKORDB_URL or FALKORDB_HOST, not both (see .env.example)");
   }
-  if (!FALKORDB_URL) throw new Error("Set FALKORDB_URL or FALKORDB_HOST (see .env.example)");
-  return FalkorDB.connect({ url: FALKORDB_URL });
+  if (host) {
+    return {
+      username: env.FALKORDB_USERNAME || "default",
+      password: env.FALKORDB_PASSWORD,
+      socket: {
+        host,
+        port: Number(env.FALKORDB_PORT || 6379),
+        tls: env.FALKORDB_TLS === "true",
+      } as never,
+    };
+  }
+  if (!url) throw new Error("Set FALKORDB_URL or FALKORDB_HOST (see .env.example)");
+  return { url };
+}
+
+export function connect(env: NodeJS.ProcessEnv = process.env): Promise<Db> {
+  return FalkorDB.connect(connectionOptions(env));
 }
 
 /** Indexes from plan §5. Safe to call repeatedly. */

@@ -35,8 +35,33 @@ testing the live dashboard.
    ```
 
    Database integration tests require FalkorDB settings; without them, those
-   tests are skipped. Do not treat skipped integration tests as proof that the
-   cloud database is reachable.
+   tests are skipped. If `.env` contains FalkorDB settings, the integration
+   tests attempt to connect and fail if the configured database is unreachable
+   or rejects authentication. Do not treat skipped integration tests as proof
+   that the cloud database is reachable.
+
+   Configure either `FALKORDB_URL` or the split `FALKORDB_HOST`,
+   `FALKORDB_PORT`, `FALKORDB_USERNAME`, and `FALKORDB_PASSWORD` values. When
+   using the URL, leave `FALKORDB_HOST` empty: the client prefers the split
+   host whenever it is set. When using split settings, leave `FALKORDB_URL`
+   empty. Confirm the endpoint, credentials, and TLS setting against the
+   current FalkorDB Cloud connection details.
+
+   To run only local/unit tests without connecting to a configured database,
+   clear both connection selectors in this PowerShell session first:
+
+   ```powershell
+   $env:FALKORDB_URL = ""
+   $env:FALKORDB_HOST = ""
+   npm test
+   ```
+
+   The database-dependent tests will be reported as skipped; this does not
+   replace running them against a reachable test database.
+
+   On Windows, stop any local MCP/agent process using this checkout before
+   running `npm ci`. `npm ci` replaces `node_modules`; a running `tsx` process
+   can keep esbuild's executable open and cause `EPERM` during cleanup.
 
 ## 2. Deploy the dashboard to Vercel
 

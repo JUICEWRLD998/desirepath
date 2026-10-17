@@ -10,7 +10,7 @@ let db: Awaited<ReturnType<typeof connect>>;
 const made: string[] = [];
 const graph = (site: string) => { const n = graphName(`${site}-${run}`); made.push(n); return db.selectGraph(n); };
 before(async () => { if (!skip) db = await connect(); });
-after(async () => { if (!skip) { for (const n of made) await db.selectGraph(n).delete().catch(() => {}); await db.close(); } });
+after(async () => { if (db) { for (const n of made) await db.selectGraph(n).delete().catch(() => {}); await db.close(); } });
 
 type Gr = ReturnType<typeof graph>;
 const count = async (g: Gr, q: string) => Object.values((await g.query(q)).data![0] as Record<string, number>)[0];
