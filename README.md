@@ -8,7 +8,7 @@ Built for **Graph Hacks: Context for AI Agents** (WeMakeDevs x FalkorDB). Tracks
 
 | | |
 |---|---|
-| Live dashboard | TODO-URL (see [docs/DEPLOY.md](docs/DEPLOY.md)) |
+| Live dashboard | TODO-URL (see [deploy.md](deploy.md)) |
 | MCP endpoint | TODO-URL/mcp |
 | Demo video | TODO-URL |
 | Numbers behind every claim | [CLAIMS.md](CLAIMS.md) |
@@ -156,7 +156,8 @@ packages/mcp/     tools.ts, server.ts (stdio + HTTP), tests/
 apps/testshop/    our own shop with the redesign switch
 apps/web/         Next.js dashboard (DESIGN.md is its design plan)
 scripts/          p2_demo.ts, p3_runs.ts, measure_reuse.py, measure_palette.mjs, pave_mind2web.ts, mcp_demo.ts
-docs/             GRAPH_MODEL.md, QUERIES.md, SITES.md, DEPLOY.md, AI_DISCLOSURE.md, receipts/
+docs/             GRAPH_MODEL.md, QUERIES.md, SITES.md, AI_DISCLOSURE.md, receipts/
+deploy.md         Vercel, Render, and FalkorDB Cloud deployment guide
 DEMO.md CLAIMS.md Dockerfile render.yaml LICENSE
 spikes/           Phase 0 scripts and their raw output (spikes/out/)
 ```
