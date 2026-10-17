@@ -16,6 +16,7 @@ import { fill } from "../packages/agent/task.ts";
 
 const arg = (n: string) => { const i = process.argv.indexOf(`--${n}`); return i >= 0 ? process.argv[i + 1] : undefined; };
 const COLD = Number(arg("cold") ?? 2), MAP = Number(arg("map") ?? 2);
+const OUT = arg("out") ?? "docs/receipts/p3-latest.json";
 const only = arg("only")?.split(",");
 const tasks = loadTasks().filter(t => !/^(127\.0\.0\.1|localhost)/.test(new URL(t.baseUrl).hostname) && (!only || only.includes(t.id)));
 if (!tasks.length) { console.error("no matching real-site tasks"); process.exit(2); }
@@ -63,7 +64,7 @@ try {
   }
 } finally {
   mkdirSync("docs/receipts", { recursive: true });
-  writeFileSync("docs/receipts/p3-latest.json", JSON.stringify({ model: process.env.OPENROUTER_MODEL, verdict, runs: receipt }, null, 2));
+  writeFileSync(OUT, JSON.stringify({ model: process.env.OPENROUTER_MODEL, verdict, runs: receipt }, null, 2));
   await browser.close(); await db.close();
 }
 console.log("\nverdict per task:", JSON.stringify(verdict, null, 1));

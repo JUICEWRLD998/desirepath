@@ -1,0 +1,66 @@
+/* Desire path tokens. Ground is turf-dark loam; amber is trodden soil (traffic); clay is a failed step; cool blue is the LLM (cold) run;
+   mint is the planned route and the one call to action. Surfaces are tinted toward hue 165, chroma 0.008 to 0.03. */
+:root {
+  --font-display: var(--font-bricolage), "Segoe UI", system-ui, sans-serif;
+  --font-ui: var(--font-hanken), "Segoe UI", system-ui, sans-serif;
+  --font-code: var(--font-plex-mono), ui-monospace, Consolas, monospace;
+
+  --ground: oklch(0.975 0.012 150);
+  --surface: oklch(0.945 0.016 150);
+  --surface-2: oklch(0.915 0.02 150);
+  --line: oklch(0.82 0.03 155);
+  --ink: oklch(0.22 0.03 165);
+  --ink-muted: oklch(0.42 0.03 160);
+  --accent: oklch(0.5 0.12 168);
+  --accent-ink: oklch(0.99 0.01 168);
+  --accent-soft: oklch(0.9 0.05 168);
+  --worn: oklch(0.58 0.12 70);
+  --clay: oklch(0.52 0.17 28);
+  --cold: oklch(0.48 0.1 235);
+  --contour: oklch(0.7 0.05 155 / 0.38);
+
+  --r-1: 6px; --r-2: 10px; --r-3: 16px;
+  --shadow-1: 0 1px 0 oklch(0.2 0.03 165 / 0.06), 0 1px 3px oklch(0.2 0.03 165 / 0.1);
+  --shadow-2: 0 1px 0 oklch(0.2 0.03 165 / 0.05), 0 8px 28px oklch(0.2 0.03 165 / 0.14);
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --t-fast: 140ms; --t-med: 220ms;
+  color-scheme: light;
+}
+:root[data-theme="dark"] {
+  --ground: oklch(0.19 0.022 165);
+  --surface: oklch(0.235 0.024 165);
+  --surface-2: oklch(0.285 0.026 162);
+  --line: oklch(0.38 0.03 160);
+  --ink: oklch(0.94 0.014 130);
+  --ink-muted: oklch(0.76 0.025 150);
+  --accent: oklch(0.83 0.14 168);
+  --accent-ink: oklch(0.2 0.03 168);
+  --accent-soft: oklch(0.32 0.06 168);
+  --worn: oklch(0.8 0.11 75);
+  --clay: oklch(0.72 0.15 28);
+  --cold: oklch(0.78 0.09 235);
+  --contour: oklch(0.45 0.04 160 / 0.5);
+  --shadow-1: 0 1px 0 oklch(0 0 0 / 0.3), 0 1px 3px oklch(0 0 0 / 0.35);
+  --shadow-2: 0 1px 0 oklch(0 0 0 / 0.3), 0 10px 32px oklch(0 0 0 / 0.5);
+  color-scheme: dark;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --ground: oklch(0.19 0.022 165);
+    --surface: oklch(0.235 0.024 165);
+    --surface-2: oklch(0.285 0.026 162);
+    --line: oklch(0.38 0.03 160);
+    --ink: oklch(0.94 0.014 130);
+    --ink-muted: oklch(0.76 0.025 150);
+    --accent: oklch(0.83 0.14 168);
+    --accent-ink: oklch(0.2 0.03 168);
+    --accent-soft: oklch(0.32 0.06 168);
+    --worn: oklch(0.8 0.11 75);
+    --clay: oklch(0.72 0.15 28);
+    --cold: oklch(0.78 0.09 235);
+    --contour: oklch(0.45 0.04 160 / 0.5);
+    --shadow-1: 0 1px 0 oklch(0 0 0 / 0.3), 0 1px 3px oklch(0 0 0 / 0.35);
+    --shadow-2: 0 1px 0 oklch(0 0 0 / 0.3), 0 10px 32px oklch(0 0 0 / 0.5);
+    color-scheme: dark;
+  }
+}

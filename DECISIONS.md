@@ -14,6 +14,7 @@ Raw output of every spike: `spikes/out/`. Raw output of the Phase 2 run: `docs/r
 | P2 Thin path | **Done, on local FalkorDB and on Cloud, with the real model** (`google/gemini-2.5-flash` via OpenRouter). | `npm run p2`, `docs/receipts/p2-latest.json` |
 | P3 Real sites | **Done except the "fewer steps" criterion**: 32 of 32 runs succeeded on books.toscrape.com, quotes.toscrape.com and Wikipedia; map runs used 0 LLM calls against 26 for cold; steps were equal. Open Library not run. | `npm run p3`, `docs/receipts/p3-latest.json`, `docs/SITES.md` |
 | P4 MCP and coordination | **Done** (verified with the MCP SDK client, not Claude Code itself): five tools, concurrent writes lose nothing, tenant overlay, Mind2Web paved and measured. | `packages/mcp`, `npm test`, `npm run mcp:demo`, `npm run pave` |
+| P5 Dashboard | **Built and checked in a real browser**: map, plan box, cold vs map, runs, in both themes at eight widths. Not built: the human-paved Mind2Web layer toggle. The runs view has no concurrency to show yet because every Cloud map has one writer. Not run: the Hallmark slop test, `break`, the blind critic (see Phase 5 verification). | `npm run web:build` then `npm run web:start`, `apps/web/DESIGN.md`, `docs/receipts/p5/` |
 
 Whole suite: `npm test` gives 70 tests, 70 pass **on Cloud** (also on a local FalkorDB). `npm run p2` also passes on Cloud (cold 4 steps / 4 LLM calls; map 3 steps / 0; redesign: 1 failed step, detour with 0 LLM calls; 2 failures before the planner stopped choosing the broken edge). Cloud is about 300 ms per query, so runs are slower there than local (map run 5.5 s against 0.6 s).
 
@@ -109,6 +110,27 @@ Numbers from `docs/receipts/p3-latest.json` (`npm run p3`, 8 tasks on 3 real sit
 26. **Paving: a state is a position in a task, not a page.** `scripts/pave_mind2web.ts` loads all 73 Mind2Web sites into `m2w:<site>` (7,157 states, 7,084 edges, 137 s on Cloud). Because a state is the action prefix, the graphs are close to trees (edges = states - 1 per site) and share much less than the transition measure below suggests. Free-tier size: FalkorDB reports 0 MB for every graph (rounded to whole megabytes), so each is under half a megabyte and the 77 graphs together are under about 38 MB; a precise figure is not available from the server.
 27. **The reuse measurement reproduces.** `scripts/measure_reuse.py` (DuckDB over three columns of the public parquet files): 24.5% of 7,775 steps were already walked by another task on the same site; growth curve 4.9 / 8.5 / 13.8 / 20.2 / 27.8% for 1 / 2 / 4 / 8 / 12 earlier tasks; control cross-site 0.2% (want near 0), planted duplicate 100.0%. The script exits 1 if a control fails.
 
+## Phase 5 decisions (dashboard, `apps/web`)
+
+28. **Next.js 16 + CSS Modules + Motion, reading the graph from route handlers.** `apps/web/lib/data.ts` is read-only (a missing graph is never created). `/api/plan` calls the same `planRoute` as the MCP `plan` tool, so the box on the page and an agent get the same answer. Site and signature parameters are restricted before they reach a query.
+29. **A bundler broke the Cypher loader and the failure looked like a database error.** Under Turbopack, ``new URL(`./queries/${name}.cypher`, import.meta.url)`` became ONE copied asset, so every query read `explain.cypher` and `/api/plan` answered `Missing parameters` (from FalkorDB). It worked under tsx, so it only showed in the built app. `graph.ts` now finds the queries folder on disk (next to the file, else upward from the working directory). 70 of 70 tests still pass on Cloud after the change.
+30. **Cold vs map shows what the data says, including a result that does not flatter.** On the latest pair for "Open page 3 of the Default category" the map run took 29.4 s against 15.8 s for the cold run (Cloud round trips plus the one-action-per-second delay). It used 0 model calls against 3 and 0 tokens against 5,229. The page prints both and says why steps are equal. It does not hide the slower run.
+31. **Plan latency is about 2.4 s on Cloud** (`planRoute` makes several sequential queries at about 300 ms each). The graph list is cached for 10 s and the three map reads run in parallel. Not tuned further.
+
+### Phase 5 verification (final build, 2026-10-17)
+
+| Check | Result |
+|---|---|
+| `ui-score.mjs` (planted controls passed) | 79 on the first build with an auto-fail tell (centre-aligned buttons), then 89, then **92/100 with no fired tells**: `docs/receipts/p5/ui-score-final.json`. The remaining points are source-tree terms a URL target cannot measure. |
+| axe-core 4.10.2 | **0 violations** in 16 states (dark and light, 1280 and 375, map / plan with detail / cold vs map / runs). The first pass found 2 serious (`definition-list`) and 4 moderate; fixed. |
+| Widths 320, 375, 414, 768, 1024, 1280, 1440, 1920, both themes | 16 screenshot sets, horizontal overflow 0 in every one, route fully lit in every one (`docs/receipts/p5/`). |
+| Signature moment | Filmstrip (`docs/receipts/p5/film-normal-*.jpg`): hop 1 draws 5% to 100% in about 260 ms, hop 2 follows. Reduced motion: both hops lit at the first frame, same end state (2 hops, 3 stakes reached). CLS 0.015. |
+| Console | 0 errors after adding an icon (the first run had a favicon 404). |
+| Palette (`node scripts/measure_palette.mjs`, its two controls pass) | Every text pair at or above 4.5:1 and graphic colours at or above 3:1 (lowest 4.70:1); role hues dE76 39.5 to 97.0 (need 20); accent chroma 5.4x to 10x the surface chroma, in both themes. |
+| Stress states at 375 | Map API blocked (error panel), 1.5 s latency (loading text), no-match task (explains, points to real goals), 294-character task (no overflow). |
+
+**Not run:** the Hallmark 60-gate slop test, `break` per component, `ecc:click-path-audit` (the journey's handlers were read by hand, not traced by the skill), `better-interface`, the `ecc:design-system` audit, the blind critic, and the three-direction exploration (one direction was designed and built). **Not built:** the human-paved Mind2Web layer toggle. The runs view says plainly when only one agent has written to a map, which is the case for every map on Cloud today.
+
 ## Known limitations (not fixed)
 
 - A template screen is shared by every item of that kind, so a route is not product-specific: after two different products are explored, the planner can pick the wrong item's edge. The goal predicate (`checkout` shows the product) catches it; the run then fails or falls back to the LLM. The demo task has one product.
@@ -118,4 +140,4 @@ Numbers from `docs/receipts/p3-latest.json` (`npm run p3`, 8 tasks on 3 real sit
 - After a failed map step that left the screen, the agent presses Back once; if the site has no history entry it stays where it is and the next plan starts from there (unknown screens fall back to the LLM).
 - Names containing `:` make action keys ambiguous in theory; collisions are not expected on the demo sites.
 - Two edges with the same `key` from one screen to different screens are possible if a site's behaviour changes; the planner treats them as separate edges.
-- Tenant-first planning (§6.4), concurrent agents (P4) and the MCP server (P4) are not built yet.
+- ~~Tenant-first planning (§6.4), concurrent agents (P4) and the MCP server (P4) are not built yet.~~ Correction (2026-10-17): all three were built in Phase 4 (decisions 23 to 25).

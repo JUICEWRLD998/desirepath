@@ -1,0 +1,36 @@
+.wrap { position: relative; overflow: auto; display: flex; flex-direction: column; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-3); min-height: 380px; box-shadow: var(--shadow-1); }
+.svg { display: block; margin: auto; flex: none; }
+@media (min-width: 1024px) { .wrap { min-height: 540px; } }
+.contours path { fill: none; stroke: var(--contour); stroke-width: 1; }
+.hit { fill: none; stroke: transparent; stroke-width: 22; cursor: pointer; }
+.trail path { fill: none; stroke-linecap: round; }
+.trail { outline: none; transition: opacity var(--t-med) var(--ease-out); }
+.trail:focus-visible .hit { stroke: var(--accent-soft); }
+.trail[data-dim] { opacity: 0.35; }
+.worn { stroke: var(--worn); }
+.mixed { stroke: var(--worn); stroke-dasharray: 12 5; }
+.failed { stroke: var(--clay); stroke-dasharray: 7 6; }
+.ring { stroke: var(--ink); opacity: 0.18; }
+.lit { fill: none; stroke: var(--accent); stroke-width: 6; stroke-linecap: round; filter: drop-shadow(0 0 5px var(--accent)); pointer-events: none; }
+.badge rect { fill: var(--ground); stroke: var(--line); }
+.badge text { fill: var(--ink-muted); font-size: 11.5px; font-family: var(--font-ui); }
+.node { cursor: pointer; outline: none; }
+.node rect { fill: var(--surface-2); stroke: var(--line); stroke-width: 1.2; transition: stroke var(--t-fast), fill var(--t-fast); }
+.node:hover rect { stroke: var(--ink-muted); }
+.node:focus-visible rect { stroke: var(--accent); stroke-width: 2.4; }
+.node[data-selected] rect { stroke: var(--ink); stroke-width: 2; }
+.node[data-reached] rect { stroke: var(--accent); stroke-width: 2.2; }
+.node[data-pulse] rect { animation: stake 520ms var(--ease-out); }
+@keyframes stake { 0% { fill: var(--accent-soft); } 100% { fill: var(--surface-2); } }
+.nodeTitle { fill: var(--ink); font-size: 13.5px; font-weight: 600; font-family: var(--font-ui); }
+.nodeUrl { fill: var(--ink-muted); font-size: 11.5px; font-family: var(--font-code); }
+.flag path { stroke: var(--ink-muted); stroke-width: 1.5; fill: var(--worn); }
+.flag path:first-child { fill: none; }
+.walker { fill: var(--accent); stroke: var(--ground); stroke-width: 2.5; pointer-events: none; }
+.legend { position: sticky; left: 0; bottom: 0; display: flex; flex-wrap: wrap; gap: 6px 18px; margin: 0; padding: 10px 16px 12px; list-style: none; font-size: 12.5px; color: var(--ink-muted); background: var(--surface); border-top: 1px solid var(--line); }
+.legend li { display: flex; align-items: center; gap: 7px; }
+.legend i { display: inline-block; width: 22px; height: 0; border-top: 4px solid; border-radius: 2px; }
+.kWorn { border-color: var(--worn); }
+.kFailed { border-color: var(--clay); border-top-style: dashed !important; }
+.kLit { border-color: var(--accent); }
+.kFlag { width: 10px !important; height: 10px !important; border: 0 !important; background: var(--worn); clip-path: polygon(0 0, 100% 50%, 0 100%); }

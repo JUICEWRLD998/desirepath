@@ -20,5 +20,9 @@
     "apps",
     "scripts",
     "spikes"
+  ],
+  "exclude": [
+    "apps/web",
+    "node_modules"
   ]
 }

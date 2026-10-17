@@ -17,10 +17,16 @@
     "p3": "tsx scripts/p3_runs.ts",
     "mcp": "tsx packages/mcp/server.ts",
     "pave": "tsx scripts/pave_mind2web.ts",
-    "mcp:demo": "tsx scripts/mcp_demo.ts"
+    "mcp:demo": "tsx scripts/mcp_demo.ts",
+    "web": "next dev apps/web -p 3100",
+    "web:build": "next build apps/web",
+    "web:start": "next start apps/web -p 3100",
+    "p6": "tsx scripts/p3_runs.ts --cold 3 --map 3 --out docs/receipts/p6-runs.json && tsx scripts/p6_summary.ts"
   },
   "devDependencies": {
     "@types/node": "^26.6.5",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
     "tsx": "^4.23.15",
     "typescript": "^7.0.2"
   },
@@ -30,7 +36,11 @@
     "ai": "^7.0.142",
     "dotenv": "^18.0.8",
     "falkordb": "^6.8.0",
+    "motion": "^14.3.0",
+    "next": "^16.4.2",
     "playwright": "^1.64.1",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
     "zod": "^4.6.7"
   }
 }

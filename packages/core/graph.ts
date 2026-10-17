@@ -1,5 +1,7 @@
 // FalkorDB client for the map. One graph per site (public) or per tenant+site (private overlay), plan §5.
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { FalkorDB } from "falkordb";
 import { routeSuccess } from "./risk.ts";
 import { edgeId } from "./route.ts";
@@ -8,7 +10,16 @@ export type Db = Awaited<ReturnType<typeof FalkorDB.connect>>;
 type G = ReturnType<Db["selectGraph"]>;
 export type Graph = G;
 
-const query = (name: string) => readFileSync(new URL(`./queries/${name}.cypher`, import.meta.url), "utf8");
+// Not `new URL(`./queries/${name}.cypher`, import.meta.url)`: a bundler (Turbopack in apps/web) turns that into ONE asset and every
+// query then reads the same file. Look the folder up on disk instead: next to this file (tsx, tests), else from the working directory up.
+function queriesDir(): string {
+  const here = dirname(fileURLToPath(import.meta.url));
+  const found = [join(here, "queries"), ...Array.from({ length: 5 }, (_, i) => join(process.cwd(), ...Array(i).fill(".."), "packages", "core", "queries"))].find(d => existsSync(join(d, "goals.cypher")));
+  if (!found) throw new Error("packages/core/queries not found; run from the repository root");
+  return found;
+}
+const QUERIES = queriesDir();
+const query = (name: string) => readFileSync(join(QUERIES, `${name}.cypher`), "utf8");
 const SQL = {
   report: query("report"), plan: query("plan"), goals: query("goals"), stats: query("stats"),
   runStart: query("run_start"), runEnd: query("run_end"), step: query("step"), goal: query("goal"), outgoing: query("outgoing"), goalById: query("goal_by_id"), owned: query("owned_edges"), runEnsure: query("run_ensure"), explain: query("explain"),

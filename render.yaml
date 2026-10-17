@@ -1,0 +1,15 @@
+# Render blueprint for the MCP server. Secrets are set in the dashboard (sync: false), never in this file.
+services:
+  - type: web
+    name: desirepath-mcp
+    runtime: docker
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      - { key: FALKORDB_HOST, sync: false }
+      - { key: FALKORDB_PORT, sync: false }
+      - { key: FALKORDB_USERNAME, sync: false }
+      - { key: FALKORDB_PASSWORD, sync: false }
+      - { key: FALKORDB_TLS, value: "true" }
+      - { key: MCP_WRITE_TOKEN, generateValue: true }
+      - { key: MCP_WRITABLE_SITES, value: "books.toscrape.com,quotes.toscrape.com,en.wikipedia.org,testshop" }

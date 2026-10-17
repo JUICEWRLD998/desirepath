@@ -1,0 +1,687 @@
+{
+  "model": "google/gemini-2.5-flash",
+  "verdict": {
+    "books-page2": {
+      "coldSteps": [
+        2,
+        2,
+        2
+      ],
+      "mapSteps": [
+        2,
+        2,
+        2
+      ],
+      "mapFewerThanColdMean": false
+    },
+    "books-open-book": {
+      "coldSteps": [
+        2,
+        2,
+        2
+      ],
+      "mapSteps": [
+        2,
+        2,
+        2
+      ],
+      "mapFewerThanColdMean": false
+    },
+    "books-default-page3": {
+      "coldSteps": [
+        3,
+        3,
+        3
+      ],
+      "mapSteps": [
+        3,
+        3,
+        3
+      ],
+      "mapFewerThanColdMean": false
+    },
+    "quotes-tag-author": {
+      "coldSteps": [
+        1,
+        1,
+        1
+      ],
+      "mapSteps": [
+        1,
+        1,
+        1
+      ],
+      "mapFewerThanColdMean": false
+    },
+    "quotes-tag-page2": {
+      "coldSteps": [
+        1,
+        1,
+        1
+      ],
+      "mapSteps": [
+        1,
+        1,
+        1
+      ],
+      "mapFewerThanColdMean": false
+    },
+    "quotes-page3": {
+      "coldSteps": [
+        2,
+        2,
+        2
+      ],
+      "mapSteps": [
+        2,
+        2,
+        2
+      ],
+      "mapFewerThanColdMean": false
+    },
+    "wikipedia-desire-path-erosion": {
+      "coldSteps": [
+        1,
+        1,
+        1
+      ],
+      "mapSteps": [
+        1,
+        1,
+        1
+      ],
+      "mapFewerThanColdMean": false
+    },
+    "wikipedia-desire-path-yosemite": {
+      "coldSteps": [
+        1,
+        1,
+        1
+      ],
+      "mapSteps": [
+        1,
+        1,
+        1
+      ],
+      "mapFewerThanColdMean": false
+    }
+  },
+  "runs": [
+    {
+      "task": "books-page2",
+      "mode": "cold",
+      "n": 1,
+      "outcome": "success",
+      "steps": 2,
+      "mapSteps": 0,
+      "failedMapSteps": 0,
+      "llmCalls": 2,
+      "tokens": 3423,
+      "seconds": 11.1
+    },
+    {
+      "task": "books-page2",
+      "mode": "cold",
+      "n": 2,
+      "outcome": "success",
+      "steps": 2,
+      "mapSteps": 0,
+      "failedMapSteps": 0,
+      "llmCalls": 2,
+      "tokens": 3423,
+      "seconds": 9.1
+    },
+    {
+      "task": "books-page2",
+      "mode": "cold",
+      "n": 3,
+      "outcome": "success",
+      "steps": 2,
+      "mapSteps": 0,
+      "failedMapSteps": 0,
+      "llmCalls": 2,
+      "tokens": 3423,
+      "seconds": 9.8
+    },
+    {
+      "task": "books-page2",
+      "mode": "map",
+      "n": 1,
+      "outcome": "success",
+      "steps": 2,
+      "mapSteps": 2,
+      "failedMapSteps": 0,
+      "llmCalls": 0,
+      "tokens": 0,
+      "seconds": 9
+    },
+    {
+      "task": "books-page2",
+      "mode": "map",
+      "n": 2,
+      "outcome": "success",
+      "steps": 2,
+      "mapSteps": 2,
+      "failedMapSteps": 0,
+      "llmCalls": 0,
+      "tokens": 0,
+      "seconds": 9.8
+    },
+    {
+      "task": "books-page2",
+      "mode": "map",
+      "n": 3,
+      "outcome": "success",
+      "steps": 2,
+      "mapSteps": 2,
+      "failedMapSteps": 0,
+      "llmCalls": 0,
+      "tokens": 0,
+      "seconds": 9
+    },
+    {
+      "task": "books-open-book",
+      "mode": "cold",
+      "n": 1,
+      "outcome": "success",
+      "steps": 2,
+      "mapSteps": 0,
+      "failedMapSteps": 0,
+      "llmCalls": 2,
+      "tokens": 3037,
+      "seconds": 10.5
+    },
+    {
+      "task": "books-open-book",
+      "mode": "cold",
+      "n": 2,
+      "outcome": "success",
+      "steps": 2,
+      "mapSteps": 0,
+      "failedMapSteps": 0,
+      "llmCalls": 2,
+      "tokens": 3037,
+      "seconds": 9.2
+    },
+    {
+      "task": "books-open-book",
+      "mode": "cold",
+      "n": 3,
+      "outcome": "success",
+      "steps": 2,
+      "mapSteps": 0,
+      "failedMapSteps": 0,
+      "llmCalls": 2,
+      "tokens": 3037,
+      "seconds": 9.8
+    },
+    {
+      "task": "books-open-book",
+      "mode": "map",
+      "n": 1,
+      "outcome": "success",
+      "steps": 2,
+      "mapSteps": 2,
+      "failedMapSteps": 0,
+      "llmCalls": 0,
+      "tokens": 0,
+      "seconds": 9
+    },
+    {
+      "task": "books-open-book",
+      "mode": "map",
+      "n": 2,
+      "outcome": "success",
+      "steps": 2,
+      "mapSteps": 2,
+      "failedMapSteps": 0,
+      "llmCalls": 0,
+      "tokens": 0,
+      "seconds": 8.8
+    },
+    {
+      "task": "books-open-book",
+      "mode": "map",
+      "n": 3,
+      "outcome": "success",
+      "steps": 2,
+      "mapSteps": 2,
+      "failedMapSteps": 0,
+      "llmCalls": 0,
+      "tokens": 0,
+      "seconds": 8.9
+    },
+    {
+      "task": "books-default-page3",
+      "mode": "cold",
+      "n": 1,
+      "outcome": "success",
+      "steps": 3,
+      "mapSteps": 0,
+      "failedMapSteps": 0,
+      "llmCalls": 3,
+      "tokens": 5229,
+      "seconds": 12.8
+    },
+    {
+      "task": "books-default-page3",
+      "mode": "cold",
+      "n": 2,
+      "outcome": "success",
+      "steps": 3,
+      "mapSteps": 0,
+      "failedMapSteps": 0,
+      "llmCalls": 3,
+      "tokens": 5229,
+      "seconds": 13.9
+    },
+    {
+      "task": "books-default-page3",
+      "mode": "cold",
+      "n": 3,
+      "outcome": "success",
+      "steps": 3,
+      "mapSteps": 0,
+      "failedMapSteps": 0,
+      "llmCalls": 3,
+      "tokens": 5229,
+      "seconds": 13.4
+    },
+    {
+      "task": "books-default-page3",
+      "mode": "map",
+      "n": 1,
+      "outcome": "success",
+      "steps": 3,
+      "mapSteps": 3,
+      "failedMapSteps": 0,
+      "llmCalls": 0,
+      "tokens": 0,
+      "seconds": 12.4
+    },
+    {
+      "task": "books-default-page3",
+      "mode": "map",
+      "n": 2,
+      "outcome": "success",
+      "steps": 3,
+      "mapSteps": 3,
+      "failedMapSteps": 0,
+      "llmCalls": 0,
+      "tokens": 0,
+      "seconds": 11.9
+    },
+    {
+      "task": "books-default-page3",
+      "mode": "map",
+      "n": 3,
+      "outcome": "success",
+      "steps": 3,
+      "mapSteps": 3,
+      "failedMapSteps": 0,
+      "llmCalls": 0,
+      "tokens": 0,
+      "seconds": 11.1
+    },
+    {
+      "task": "quotes-tag-author",
+      "mode": "cold",
+      "n": 1,
+      "outcome": "success",
+      "steps": 1,
+      "mapSteps": 0,
+      "failedMapSteps": 0,
+      "llmCalls": 1,
+      "tokens": 908,
+      "seconds": 7.5
+    },
+    {
+      "task": "quotes-tag-author",
+      "mode": "cold",
+      "n": 2,
+      "outcome": "success",
+      "steps": 1,
+      "mapSteps": 0,
+      "failedMapSteps": 0,
+      "llmCalls": 1,
+      "tokens": 908,
+      "seconds": 7.2
+    },
+    {
+      "task": "quotes-tag-author",
+      "mode": "cold",
+      "n": 3,
+      "outcome": "success",
+      "steps": 1,
+      "mapSteps": 0,
+      "failedMapSteps": 0,
+      "llmCalls": 1,
+      "tokens": 908,
+      "seconds": 7.1
+    },
+    {
+      "task": "quotes-tag-author",
+      "mode": "map",
+      "n": 1,
+      "outcome": "success",
+      "steps": 1,
+      "mapSteps": 1,
+      "failedMapSteps": 0,
+      "llmCalls": 0,
+      "tokens": 0,
+      "seconds": 6.6
+    },
+    {
+      "task": "quotes-tag-author",
+      "mode": "map",
+      "n": 2,
+      "outcome": "success",
+      "steps": 1,
+      "mapSteps": 1,
+      "failedMapSteps": 0,
+      "llmCalls": 0,
+      "tokens": 0,
+      "seconds": 7.2
+    },
+    {
+      "task": "quotes-tag-author",
+      "mode": "map",
+      "n": 3,
+      "outcome": "success",
+      "steps": 1,
+      "mapSteps": 1,
+      "failedMapSteps": 0,
+      "llmCalls": 0,
+      "tokens": 0,
+      "seconds": 6.9
+    },
+    {
+      "task": "quotes-tag-page2",
+      "mode": "cold",
+      "n": 1,
+      "outcome": "success",
+      "steps": 1,
+      "mapSteps": 0,
+      "failedMapSteps": 0,
+      "llmCalls": 1,
+      "tokens": 907,
+      "seconds": 5.6
+    },
+    {
+      "task": "quotes-tag-page2",
+      "mode": "cold",
+      "n": 2,
+      "outcome": "success",
+      "steps": 1,
+      "mapSteps": 0,
+      "failedMapSteps": 0,
+      "llmCalls": 1,
+      "tokens": 907,
+      "seconds": 6.1
+    },
+    {
+      "task": "quotes-tag-page2",
+      "mode": "cold",
+      "n": 3,
+      "outcome": "success",
+      "steps": 1,
+      "mapSteps": 0,
+      "failedMapSteps": 0,
+      "llmCalls": 1,
+      "tokens": 907,
+      "seconds": 6.7
+    },
+    {
+      "task": "quotes-tag-page2",
+      "mode": "map",
+      "n": 1,
+      "outcome": "success",
+      "steps": 1,
+      "mapSteps": 1,
+      "failedMapSteps": 0,
+      "llmCalls": 0,
+      "tokens": 0,
+      "seconds": 6
+    },
+    {
+      "task": "quotes-tag-page2",
+      "mode": "map",
+      "n": 2,
+      "outcome": "success",
+      "steps": 1,
+      "mapSteps": 1,
+      "failedMapSteps": 0,
+      "llmCalls": 0,
+      "tokens": 0,
+      "seconds": 6
+    },
+    {
+      "task": "quotes-tag-page2",
+      "mode": "map",
+      "n": 3,
+      "outcome": "success",
+      "steps": 1,
+      "mapSteps": 1,
+      "failedMapSteps": 0,
+      "llmCalls": 0,
+      "tokens": 0,
+      "seconds": 5.8
+    },
+    {
+      "task": "quotes-page3",
+      "mode": "cold",
+      "n": 1,
+      "outcome": "success",
+      "steps": 2,
+      "mapSteps": 0,
+      "failedMapSteps": 0,
+      "llmCalls": 2,
+      "tokens": 1946,
+      "seconds": 10.1
+    },
+    {
+      "task": "quotes-page3",
+      "mode": "cold",
+      "n": 2,
+      "outcome": "success",
+      "steps": 2,
+      "mapSteps": 0,
+      "failedMapSteps": 0,
+      "llmCalls": 2,
+      "tokens": 1944,
+      "seconds": 11.5
+    },
+    {
+      "task": "quotes-page3",
+      "mode": "cold",
+      "n": 3,
+      "outcome": "success",
+      "steps": 2,
+      "mapSteps": 0,
+      "failedMapSteps": 0,
+      "llmCalls": 2,
+      "tokens": 1944,
+      "seconds": 8.5
+    },
+    {
+      "task": "quotes-page3",
+      "mode": "map",
+      "n": 1,
+      "outcome": "success",
+      "steps": 2,
+      "mapSteps": 2,
+      "failedMapSteps": 0,
+      "llmCalls": 0,
+      "tokens": 0,
+      "seconds": 7.3
+    },
+    {
+      "task": "quotes-page3",
+      "mode": "map",
+      "n": 2,
+      "outcome": "success",
+      "steps": 2,
+      "mapSteps": 2,
+      "failedMapSteps": 0,
+      "llmCalls": 0,
+      "tokens": 0,
+      "seconds": 8.1
+    },
+    {
+      "task": "quotes-page3",
+      "mode": "map",
+      "n": 3,
+      "outcome": "success",
+      "steps": 2,
+      "mapSteps": 2,
+      "failedMapSteps": 0,
+      "llmCalls": 0,
+      "tokens": 0,
+      "seconds": 7.3
+    },
+    {
+      "task": "wikipedia-desire-path-erosion",
+      "mode": "cold",
+      "n": 1,
+      "outcome": "success",
+      "steps": 1,
+      "mapSteps": 0,
+      "failedMapSteps": 0,
+      "llmCalls": 1,
+      "tokens": 2158,
+      "seconds": 6.4
+    },
+    {
+      "task": "wikipedia-desire-path-erosion",
+      "mode": "cold",
+      "n": 2,
+      "outcome": "success",
+      "steps": 1,
+      "mapSteps": 0,
+      "failedMapSteps": 0,
+      "llmCalls": 1,
+      "tokens": 2158,
+      "seconds": 6.2
+    },
+    {
+      "task": "wikipedia-desire-path-erosion",
+      "mode": "cold",
+      "n": 3,
+      "outcome": "success",
+      "steps": 1,
+      "mapSteps": 0,
+      "failedMapSteps": 0,
+      "llmCalls": 1,
+      "tokens": 2158,
+      "seconds": 6.7
+    },
+    {
+      "task": "wikipedia-desire-path-erosion",
+      "mode": "map",
+      "n": 1,
+      "outcome": "success",
+      "steps": 1,
+      "mapSteps": 1,
+      "failedMapSteps": 0,
+      "llmCalls": 0,
+      "tokens": 0,
+      "seconds": 5.8
+    },
+    {
+      "task": "wikipedia-desire-path-erosion",
+      "mode": "map",
+      "n": 2,
+      "outcome": "success",
+      "steps": 1,
+      "mapSteps": 1,
+      "failedMapSteps": 0,
+      "llmCalls": 0,
+      "tokens": 0,
+      "seconds": 5.9
+    },
+    {
+      "task": "wikipedia-desire-path-erosion",
+      "mode": "map",
+      "n": 3,
+      "outcome": "success",
+      "steps": 1,
+      "mapSteps": 1,
+      "failedMapSteps": 0,
+      "llmCalls": 0,
+      "tokens": 0,
+      "seconds": 6.1
+    },
+    {
+      "task": "wikipedia-desire-path-yosemite",
+      "mode": "cold",
+      "n": 1,
+      "outcome": "success",
+      "steps": 1,
+      "mapSteps": 0,
+      "failedMapSteps": 0,
+      "llmCalls": 1,
+      "tokens": 2167,
+      "seconds": 8.7
+    },
+    {
+      "task": "wikipedia-desire-path-yosemite",
+      "mode": "cold",
+      "n": 2,
+      "outcome": "success",
+      "steps": 1,
+      "mapSteps": 0,
+      "failedMapSteps": 0,
+      "llmCalls": 1,
+      "tokens": 2167,
+      "seconds": 6.8
+    },
+    {
+      "task": "wikipedia-desire-path-yosemite",
+      "mode": "cold",
+      "n": 3,
+      "outcome": "success",
+      "steps": 1,
+      "mapSteps": 0,
+      "failedMapSteps": 0,
+      "llmCalls": 1,
+      "tokens": 2167,
+      "seconds": 7.3
+    },
+    {
+      "task": "wikipedia-desire-path-yosemite",
+      "mode": "map",
+      "n": 1,
+      "outcome": "success",
+      "steps": 1,
+      "mapSteps": 1,
+      "failedMapSteps": 0,
+      "llmCalls": 0,
+      "tokens": 0,
+      "seconds": 7.3
+    },
+    {
+      "task": "wikipedia-desire-path-yosemite",
+      "mode": "map",
+      "n": 2,
+      "outcome": "success",
+      "steps": 1,
+      "mapSteps": 1,
+      "failedMapSteps": 0,
+      "llmCalls": 0,
+      "tokens": 0,
+      "seconds": 8.2
+    },
+    {
+      "task": "wikipedia-desire-path-yosemite",
+      "mode": "map",
+      "n": 3,
+      "outcome": "success",
+      "steps": 1,
+      "mapSteps": 1,
+      "failedMapSteps": 0,
+      "llmCalls": 0,
+      "tokens": 0,
+      "seconds": 7.4
+    }
+  ]
+}

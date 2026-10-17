@@ -1,0 +1,317 @@
+{
+  "round": 4,
+  "label": "final",
+  "url": "http://localhost:3111/",
+  "title": "desirepath: the worn paths of the web",
+  "scoredAt": "2026-10-17T14:58:34.299Z",
+  "controlFailed": false,
+  "controls": [
+    {
+      "name": "contrast sampler reads a planted near-identical pair below 1.5:1",
+      "ok": true,
+      "saw": "1.02:1"
+    },
+    {
+      "name": "geometry+clustering finds the planted 64×64 accent block",
+      "ok": true,
+      "saw": "4096px found of 4096px planted across 2 cluster(s)"
+    },
+    {
+      "name": "font resolver answers with a family",
+      "ok": true,
+      "saw": "Probe Sans"
+    }
+  ],
+  "score": {
+    "total": 92,
+    "got": 98,
+    "cap": 107,
+    "parts": [
+      {
+        "key": "textContrast",
+        "cap": 20,
+        "got": 20,
+        "prov": "measured",
+        "detail": "worst 7.77:1 · 7/7 pairs at AA"
+      },
+      {
+        "key": "focusRing",
+        "cap": 8,
+        "got": 8,
+        "prov": "measured",
+        "detail": "4 control(s) draw a ring ≥2px · 100% of those clear 3:1 · 3 focus rule(s) mirrored to make :focus-visible measurable"
+      },
+      {
+        "key": "disabledStates",
+        "cap": 5,
+        "got": 5,
+        "prov": "measured",
+        "detail": "5/5 disableable control(s) express disabled in 3+ channels"
+      },
+      {
+        "key": "accentBudget",
+        "cap": 10,
+        "got": 10,
+        "prov": "measured",
+        "detail": "2.0% of the viewport carries the accent (target <5%)"
+      },
+      {
+        "key": "accentCount",
+        "cap": 4,
+        "got": 4,
+        "prov": "measured",
+        "detail": "1 chromatic accent surface(s) above the 0.05% area floor"
+      },
+      {
+        "key": "typeFamilies",
+        "cap": 5,
+        "got": 5,
+        "prov": "measured",
+        "detail": "2 families: Hanken Grotesk, Bricolage Grotesque"
+      },
+      {
+        "key": "displayFace",
+        "cap": 8,
+        "got": 8,
+        "prov": "measured",
+        "detail": "display face \"Bricolage Grotesque\""
+      },
+      {
+        "key": "eyebrowGeometry",
+        "cap": 4,
+        "got": 4,
+        "prov": "measured",
+        "detail": "no eyebrow beside any heading — passes by absence (gate 54 default is eyebrow-off)"
+      },
+      {
+        "key": "honestMetrics",
+        "cap": 6,
+        "got": 5,
+        "prov": "measured",
+        "detail": "no oversized stat block either way"
+      },
+      {
+        "key": "lcpNotLazy",
+        "cap": 4,
+        "got": 4,
+        "prov": "measured",
+        "detail": "no above-fold image is lazy-loaded"
+      },
+      {
+        "key": "noEmojiIcons",
+        "cap": 3,
+        "got": 3,
+        "prov": "measured",
+        "detail": "no emoji used as an icon"
+      },
+      {
+        "key": "contentVisible",
+        "cap": 5,
+        "got": 5,
+        "prov": "measured",
+        "detail": "nothing sits at opacity<0.05 in the first viewport"
+      },
+      {
+        "key": "horizontalOverflow",
+        "cap": 6,
+        "got": 6,
+        "prov": "measured",
+        "detail": "clean at every viewport"
+      },
+      {
+        "key": "sectionRhythm",
+        "cap": 4,
+        "got": 2,
+        "prov": "measured",
+        "detail": "too few sections to judge rhythm"
+      },
+      {
+        "key": "macrostructureStamp",
+        "cap": 3,
+        "got": 3,
+        "prov": "measured",
+        "detail": "\"Workbench\""
+      },
+      {
+        "key": "tokenDiscipline",
+        "cap": 8,
+        "got": 4,
+        "prov": "unknown",
+        "detail": "no source tree measured"
+      },
+      {
+        "key": "stateCoverage",
+        "cap": 4,
+        "got": 2,
+        "prov": "unknown",
+        "detail": "no source tree measured"
+      }
+    ]
+  },
+  "autoFail": 0,
+  "autoFailTells": [],
+  "verdict": "passes the gate",
+  "tells": [],
+  "good": [],
+  "accent": {
+    "color": {
+      "r": 19,
+      "g": 34,
+      "b": 27,
+      "a": 1
+    },
+    "hue": 152,
+    "chroma": 0.44,
+    "area": 20071
+  },
+  "accentBudget": 0.02,
+  "accents": [
+    {
+      "color": {
+        "r": 19,
+        "g": 34,
+        "b": 27,
+        "a": 1
+      },
+      "hue": 152,
+      "chroma": 0.4411764705882353,
+      "area": 20071,
+      "ev": [
+        "select",
+        "nav.HMsGkG_tabs",
+        "button.HMsGkG_tab"
+      ]
+    }
+  ],
+  "directionPair": false,
+  "ground": {
+    "r": 10,
+    "g": 23,
+    "b": 17,
+    "a": 1
+  },
+  "groundChroma": 0.57,
+  "fonts": {
+    "families": [
+      "Hanken Grotesk",
+      "Bricolage Grotesque"
+    ],
+    "display": "Bricolage Grotesque",
+    "body": "Hanken Grotesk",
+    "weights": [
+      "400",
+      "600",
+      "500"
+    ]
+  },
+  "contrasts": {
+    "worst": {
+      "r": 7.7696173945172315,
+      "tag": "button",
+      "cls": "HMsGkG_tab",
+      "txt": "Cold vs map",
+      "size": 15,
+      "weight": "500",
+      "dis": false
+    },
+    "failing": [],
+    "failAA": 0,
+    "failAAA": 0,
+    "textPairs": 7,
+    "passAA": 7,
+    "unmeasurableTransparent": [],
+    "exemptInactive": [
+      {
+        "r": 7.77,
+        "txt": "Loading…"
+      }
+    ]
+  },
+  "interactive": 5,
+  "focusable": 4,
+  "disableable": 5,
+  "focusRulesMirrored": 3,
+  "focusRings": [
+    {
+      "tag": "button",
+      "w": 2,
+      "style": "solid",
+      "via": ":focus-visible",
+      "offset": 2,
+      "contrast": 10.342547307033655,
+      "shadow": "lab(0 0 0 / 0.3) 0px 1px 0px 0px, lab(0 0 0 / 0.35) 0px 1px "
+    },
+    {
+      "tag": "button",
+      "w": 2,
+      "style": "solid",
+      "via": ":focus-visible",
+      "offset": 2,
+      "contrast": 10.342547307033655,
+      "shadow": null
+    },
+    {
+      "tag": "button",
+      "w": 2,
+      "style": "solid",
+      "via": ":focus-visible",
+      "offset": 2,
+      "contrast": 10.342547307033655,
+      "shadow": null
+    },
+    {
+      "tag": "button",
+      "w": 2,
+      "style": "solid",
+      "via": ":focus-visible",
+      "offset": 2,
+      "contrast": 11.507149278399936,
+      "shadow": null
+    }
+  ],
+  "overflow": {
+    "desktop": {
+      "scrollW": 1280,
+      "clientW": 1280,
+      "wide": []
+    },
+    "tablet": {
+      "scrollW": 768,
+      "clientW": 768,
+      "wide": []
+    },
+    "mobile": {
+      "scrollW": 375,
+      "clientW": 375,
+      "wide": []
+    }
+  },
+  "overflowOffenders": [],
+  "sections": 1,
+  "elements": 19,
+  "source": null,
+  "fixture": null,
+  "rubric": {
+    "version": 1,
+    "caps": {
+      "textContrast": 20,
+      "focusRing": 8,
+      "disabledStates": 5,
+      "accentBudget": 10,
+      "accentCount": 4,
+      "typeFamilies": 5,
+      "displayFace": 8,
+      "eyebrowGeometry": 4,
+      "honestMetrics": 6,
+      "lcpNotLazy": 4,
+      "noEmojiIcons": 3,
+      "contentVisible": 5,
+      "horizontalOverflow": 6,
+      "sectionRhythm": 4,
+      "macrostructureStamp": 3,
+      "tokenDiscipline": 8,
+      "stateCoverage": 4
+    }
+  },
+  "snapshot": null
+}
