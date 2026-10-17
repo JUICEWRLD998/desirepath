@@ -66,9 +66,11 @@ testing the live dashboard.
 ## 2. Deploy the dashboard to Vercel
 
 1. In Vercel, choose **Add New → Project** and import the GitHub repository.
-2. Set **Root Directory** to `apps/web`. Enable **Include source files outside
-   of the Root Directory in the Build Step** so the Next.js app can import the
-   shared `packages/` code. Use the Next.js framework preset.
+2. Set **Root Directory** to `apps/web` (not `./`). If the folder is not shown
+   in the picker, enter `apps/web` as the directory path; it exists in the
+   repository but is not the repository root. Enable **Include source files
+   outside of the Root Directory in the Build Step** so the Next.js app can
+   import the shared `packages/` code. Use the Next.js framework preset.
 3. Add these **Production** environment variables in Project Settings:
 
    | Name | Value |
@@ -77,7 +79,7 @@ testing the live dashboard.
    | `FALKORDB_PORT` | Port from the FalkorDB connection details |
    | `FALKORDB_USERNAME` | FalkorDB username |
    | `FALKORDB_PASSWORD` | FalkorDB password |
-   | `FALKORDB_TLS` | `true` |
+   | `FALKORDB_TLS` | `false` for the currently tested FalkorDB host |
 
    These variables are server-side. The dashboard does not need
    `OPENROUTER_API_KEY`; browser runs and model calls remain local.

@@ -10,6 +10,6 @@ services:
       - { key: FALKORDB_PORT, sync: false }
       - { key: FALKORDB_USERNAME, sync: false }
       - { key: FALKORDB_PASSWORD, sync: false }
-      - { key: FALKORDB_TLS, value: "true" }
+      - { key: FALKORDB_TLS, value: "false" }
       - { key: MCP_WRITE_TOKEN, generateValue: true }
       - { key: MCP_WRITABLE_SITES, value: "books.toscrape.com,quotes.toscrape.com,en.wikipedia.org,testshop" }
