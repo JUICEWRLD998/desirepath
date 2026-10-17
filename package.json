@@ -4,6 +4,9 @@
   "type": "module",
   "version": "0.0.0",
   "license": "MIT",
+  "workspaces": [
+    "apps/web"
+  ],
   "scripts": {
     "p0:falkor": "tsx spikes/falkor.ts",
     "p0:llm": "tsx spikes/llm.ts",
